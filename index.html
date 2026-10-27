@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nanochemistry Interactive Presentation</title>
+
+  <!-- الخطوط -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- مكتبات Three.js و Model-Viewer -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
+  <style>
+    :root {
+      --bg-pure: #ffffff;
+      --bg-card: #f8fafc;
+      --text-dark: #0f172a;
+      --text-muted: #334155;
+      --accent: #0284c7;
+      --accent-soft: #e0f2fe;
+      --cyan-vivid: #38bdf8;
+      --black-sleek: #0f172a;
+      --emerald: #059669;
+      --border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-pure);
+      color: var(--text-dark);
+      font-family: 'Cairo', sans-serif;
+      line-height: 1.75;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 30px 24px 80px;
+    }
+
+    .section-banner {
+      margin: 40px 0 24px;
+      padding: 22px 30px;
+      background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+      border-right: 6px solid var(--accent);
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
+
+    .section-banner h2 {
+      font-size: 1.85rem;
+      font-weight: 900;
+      color: var(--black-sleek);
+    }
+
+    .split-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start; 
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 30px;
+      margin-bottom: 32px;
+      box-shadow: 0 8px 25px rgba(15, 23, 42, 0.04);
+    }
+
+    @media (max-width: 1024px) {
+      .split-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .bilingual-card {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .bilingual-card:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .en-sentence {
+      direction: ltr;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: var(--black-sleek);
+      background: #f1f5f9;
+      padding: 12px 16px;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      line-height: 1.55;
+    }
+
+    .ar-sentence {
+      font-size: 1.12rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      padding-right: 8px;
+      line-height: 1.85;
+    }
+
+    .math-badge {
+      display: inline-block;
+      direction: ltr;
+      font-family: 'Inter', monospace;
+      font-weight: 800;
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 2px 10px;
+      border-radius: 6px;
+      margin: 0 4px;
+    }
+
+    /* حاويات العرض الافتراضية (للفيديوهات والـ 3D) */
+    .visual-stage {
+      background: transparent;
+      border: none; 
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .visual-stage:fullscreen,
+    .visual-stage:-webkit-full-screen {
+      border: none;
+      border-radius: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: #000;
+    }
+
+    /* 
+      السر هنا: كلاس مخصص للصور يمنع القص ويأخذ الحجم الطبيعي للصورة 100% 
+    */
+    .img-stage {
+      aspect-ratio: auto !important;
+      height: auto !important;
+    }
+    .img-stage .real-img-wrapper {
+      height: auto !important;
+      background: transparent;
+    }
+    .img-stage img {
+      width: 100%;
+      height: auto;
+      object-fit: contain !important;
+      border-radius: 18px;
+      display: block;
+    }
+    .img-stage:fullscreen img,
+    .img-stage:-webkit-full-screen img {
+      height: 100vh !important;
+      border-radius: 0;
+    }
+
+    .custom-video-wrap {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      z-index: 10;
+      transition: opacity 0.3s ease;
+      cursor: pointer;
+    }
+
+    .custom-video-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .canvas-3d-box {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #ffffff 0%, #e2e8f0 100%);
+      cursor: grab;
+    }
+    .canvas-3d-box:active { cursor: grabbing; }
+
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #ffffff 0%, #e2e8f0 100%);
+      --poster-color: transparent;
+    }
+
+    .sketchfab-clean-crop {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+    }
+    .sketchfab-clean-crop iframe {
+      width: 100%;
+      height: calc(100% + 120px);
+      margin-top: -60px;
+      margin-bottom: -60px;
+      border: none;
+      display: block;
+    }
+
+    .btn-fs-bottom-left {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      z-index: 60;
+      background: rgba(15, 23, 42, 0.85);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 700;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-fs-bottom-left:hover {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    .btn-top {
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: var(--text-dark);
+      transition: all 0.2s;
+    }
+    .btn-top:hover {
+      background: var(--bg-card);
+      border-color: var(--accent);
+    }
+    .btn-top.primary {
+      background: var(--black-sleek);
+      color: #ffffff;
+      border-color: var(--black-sleek);
+    }
+
+    .btn-action {
+      background: var(--black-sleek);
+      color: #ffffff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-action:hover {
+      background: var(--accent);
+    }
+
+    .samir-qa-section {
+      background: #ffffff;
+      border: 2px solid var(--accent);
+      border-radius: 22px;
+      padding: 28px;
+      margin: 36px 0 50px;
+      box-shadow: 0 10px 30px rgba(2, 132, 199, 0.08);
+    }
+    .samir-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--accent-soft);
+    }
+    .samir-badge {
+      background: var(--black-sleek);
+      color: var(--cyan-vivid);
+      padding: 6px 18px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 1rem;
+    }
+
+    .qa-block {
+      background: #f8fafc;
+      border: 1px solid #bae6fd;
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 22px;
+    }
+    .qa-block:last-child {
+      margin-bottom: 0;
+    }
+    .q-title {
+      font-weight: 900;
+      color: var(--accent);
+      font-size: 1.15rem;
+      margin-bottom: 10px;
+    }
+    .answer-box {
+      margin-top: 14px;
+      padding: 18px;
+      background: #ffffff;
+      border-right: 5px solid var(--black-sleek);
+      border-radius: 12px;
+      display: block;
+    }
+    .samir-stamp {
+      margin-top: 14px;
+      display: inline-block;
+      background: var(--black-sleek);
+      color: var(--cyan-vivid);
+      font-weight: 900;
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .reactivity-end-card {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.94);
+      color: #ffffff;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      text-align: center;
+      z-index: 40;
+    }
+    .reactivity-end-card.active {
+      display: flex;
+    }
+
+    /* تذييل الموقع */
+    .site-footer {
+      margin-top: 60px;
+      padding: 36px 20px;
+      background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    }
+    .footer-en {
+      direction: ltr;
+      font-family: 'Inter', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--black-sleek);
+      margin-bottom: 8px;
+    }
+    .footer-ar {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+    .footer-img-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    }
+    .footer-img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+
+    <!-- =========================================================
+         القسم الأول: 1- What is Nanochemistry?
+         ========================================================= -->
+    <div class="section-banner">
+      <h2>1- What is Nanochemistry? | أولاً: ما هي كيمياء النانو وكيف نقيسها؟</h2>
+    </div>
+
+    <!-- الصف 1 -->
+    <section class="split-row">
+      <div>
+        <div class="bilingual-card">
+          <div class="en-sentence">Nanochemistry is the study of very small materials at the nanoscale.</div>
+          <div class="ar-sentence">كيمياء النانو هي العلم اللي بيدرس المواد متناهية الصغر لما تكون في مقياس النانو.</div>
+        </div>
+        <div class="bilingual-card">
+          <div class="en-sentence">Scientists discovered that when ordinary materials like gold or carbon are reduced to this tiny scale, they show completely new chemical and physical behaviors.</div>
+          <div class="ar-sentence">العلماء اكتشفوا إننا لما نصغّر المواد العادية (زي الدهب أو الكربون) للحجم الدقيق جداً ده، بتظهر ليها خصائص وسلوكيات كيميائية وفيزيائية جديدة تماماً مكنتش موجودة وهي في حجمها الطبيعي!</div>
+        </div>
+      </div>
+
+      <div class="visual-stage img-stage">
+        <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+        <div class="real-img-wrapper">
+          <img id="img-scientists" src="images.jfif" alt="Nanochemistry Lab">
+        </div>
+      </div>
+    </section>
+
+    <!-- الصف 2 -->
+    <section class="split-row">
+      <div>
+        <div class="bilingual-card">
+          <div class="en-sentence">A nanometer (nm) is a very small unit of length.</div>
+          <div class="ar-sentence">النانومتر ويرمز له بالرمز <span class="math-badge">nm</span> هو وحدة قياس طول صغيرة جداً بنستخدمها عشان نقيس أبعاد الجسيمات الدقيقة دي.</div>
+        </div>
+        <div class="bilingual-card">
+          <div class="en-sentence">1 nanometer = one billionth of a meter (1 nm = 10⁻⁹ m).</div>
+          <div class="ar-sentence">النانومتر الواحد بيساوي جزء من المليار من المتر العادي <span class="math-badge">1 nm = 10⁻⁹ m</span> (يعني لو جبنا عصاية طولها متر وقطعناها لمليار حتة متساوية، حتة واحدة بس منهم هتبقى هي الـ 1 نانومتر!).</div>
+        </div>
+        <div class="bilingual-card">
+          <div class="en-sentence">To see and measure nanomaterials at this extreme scale, scientists use a Scanning Electron Microscope (SEM) that fires a beam of electrons instead of ordinary light.</div>
+          <div class="ar-sentence">وعشان نقدر نشوف ونقيس المواد في الحجم المتناهي الصغر ده، العلماء بيستخدموا جهاز <strong>الميكروسكوب الإلكتروني الماسح (SEM)</strong> اللي بيطلع شعاع من الإلكترونات عشان يفحص العينة.</div>
+        </div>
+      </div>
+
+      <div class="visual-stage">
+        <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+        <div class="sketchfab-clean-crop">
+          <iframe title="electron microscope FESEM Gemini" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" src="https://sketchfab.com/models/39d882d22227475a8e1ec8ba2a7cee6f/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_hint=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_annotations=0"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- أسئلة عم سمسم وعم سمير (القسم الأول) -->
+    <div class="samir-qa-section">
+      <div class="samir-header">
+        <span class="samir-badge">🧠 أسئلة عم سمسم وعم سمير (القسم الأول)</span>
+      </div>
+
+      <div class="qa-block">
+        <div class="q-title">سؤال 1 من عم سمسم:</div>
+        <div class="en-sentence">Uncle Semsem doesn't understand: Why can't we just use a regular microscope with super strong glass lenses to see a 1-nanometer particle instead of building an expensive Electron Microscope?</div>
+        <div class="ar-sentence">عم سمسم دلوقتي مش فاهم: ليه منقدرش نركب عدسات إزاز مكبرة قوية جداً في ميكروسكوب عادي ونشوف بيها حاجة حجمها 1 نانومتر، بدل ما نكلف نفسنا ونستخدم ميكروسكوب إلكتروني معقد؟</div>
+        <div class="answer-box">
+          <div class="split-row" style="margin: 10px 0; padding: 16px; border:none; box-shadow:none; background:#f8fafc;">
+            <div>
+              <div class="en-sentence">Ordinary light waves are too fat (about 400 to 700 nanometers wide). Trying to feel a 1-nanometer particle with a 500-nanometer light wave is like trying to pick up a tiny grain of sand while wearing giant boxing gloves! Electrons are thousands of times smaller, so they easily hit the nanoparticle.</div>
+              <div class="ar-sentence">تخيل إنك لابس <strong>جوانتي ملاكمة ضخم جداً</strong> زي الراجل اللي في الصورة ده، وبتحاول تمسك بيه حباية رمل صغيرة من على الأرض؛ الجوانتي كبير وتخين جداً فمستحيل يحس بحباية الرمل أو يمسكها! ده بالظبط اللي بيحصل مع الضوء العادي: موجة الضوء العادي تخينة جداً (عرضها من 400 لـ 700 نانومتر)، يعني أتخن من جسيم النانو بـ 500 مرة! فالموجة بتعدي من فوق جسيم النانو من غير ما تخبط فيه وترجع لعنينا. عشان كده بنستخدم "الإلكترونات" لأنها رفيعة ودقيقة جداً فبتقدر تخبط في ذرات النانو وترسملنا صورتها.</div>
+              <div class="samir-stamp">✅ دي الإجابة يا عم سمسم!</div>
+            </div>
+            <div class="visual-stage img-stage">
+              <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+              <div class="real-img-wrapper">
+                <img src="image_a70ffd65.jpg" alt="المصارع بجوانتي الملاكمة وحبة الرمل">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-block">
+        <div class="q-title">سؤال 2 من عم سمير:</div>
+        <div class="en-sentence">Uncle Samir asks a harder question: A gold atom is still the exact same gold atom, so why does gold change its color from shiny yellow to ruby red when we shrink it to 10 nanometers?</div>
+        <div class="ar-sentence">طب عم سمير بيسأل سؤال تاني: هي مش ذرة الدهب هي نفس ذرة الدهب ومغيرناش نوعها؟ أمال ليه الدهب لما بنصغره لحجم النانو لونه بيتغير من الأصفر اللامع للأحمر الياقوتي؟</div>
+        <div class="answer-box">
+          <div class="split-row" style="margin: 10px 0; padding: 16px; border:none; box-shadow:none; background:#f8fafc;">
+            <div>
+              <div class="en-sentence">Think of a radio antenna: a long antenna catches certain waves, while a tiny antenna catches completely different ones. In a big gold bar, electrons reflect yellow light. But in a tiny 10nm ball, they are squeezed and vibrate differently, reflecting red instead!</div>
+              <div class="ar-sentence">تخيل إريال الراديو والتلفزيون بتاع زمان: لو الإريال طويل ومفرود، بيلقط قنوات وموجات معينة، ولو قصرته خالص بيلقط قنوات تانية خالص! الدهب برضه كده؛ الإلكترونات اللي جواه بتلعب مع الضوء. في سبيكة الدهب الكبيرة، بتعكس اللون الأصفر اللي كلنا عارفينه. لكن لما تكسر الدهب وتصغره لكورة نانو صغيرة جداً (10 نانومتر)، الإلكترونات بتتزنق وتتغير حركتها، فتبدأ تعكس درجات الأحمر والبنفسجي، <strong>زي ما هو باين قدامك وشايفه بعينيك الاتنين في الأنابيب!</strong></div>
+              <div class="samir-stamp">✅ دي الإجابة يا عم سمير!</div>
+            </div>
+            <div class="visual-stage img-stage">
+              <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+              <div class="real-img-wrapper">
+                <img src="Color-changes-of-the-reaction-solution-during-the-course-of-colloidal-AuNPs-formation.webp" alt="تغير ألوان الذهب النانوي">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- =========================================================
+         القسم الثاني: 2- What is the Nanoscale?
+         ========================================================= -->
+    <div class="section-banner">
+      <h2>2- What is the Nanoscale? | ثانياً: مقياس النانو ورحلة التقريب للـ 7 أمثلة</h2>
+    </div>
+
+    <section class="split-row">
+      <div>
+        <div class="bilingual-card">
+          <div class="en-sentence">The nanoscale usually refers to sizes between 1 and 100 nanometers.</div>
+          <div class="ar-sentence">مقياس النانو هو النطاق اللي بيضم أي حاجة حجمها من <strong>1 لحد 100 نانومتر</strong>.</div>
+        </div>
+
+        <!-- أزرار اختيار المثال من الـ 7 أمثلة -->
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin: 16px 0;">
+          <button class="btn-top primary" onclick="selectZoomExample(0)" id="ex-btn-0">1. Water (0.1 nm)</button>
+          <button class="btn-top" onclick="selectZoomExample(1)" id="ex-btn-1">2. Benzene (0.5 nm)</button>
+          <button class="btn-top" onclick="selectZoomExample(2)" id="ex-btn-2">3. Carbon Nanotube (~1.5 nm)</button>
+          <button class="btn-top" onclick="selectZoomExample(3)" id="ex-btn-3">4. Gold Nanoparticle (10 nm)</button>
+          <button class="btn-top" onclick="selectZoomExample(4)" id="ex-btn-4">5. Virus (1 µm)</button>
+          <button class="btn-top" onclick="selectZoomExample(5)" id="ex-btn-5">6. Red Blood Cell (5 µm)</button>
+          <button class="btn-top" onclick="selectZoomExample(6)" id="ex-btn-6">7. Hair (100 µm)</button>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-bottom:14px;">
+          <button class="btn-action" onclick="replayZoomVideo()">🎬 إعادة تشغيل الفيديو</button>
+          <button class="btn-action" style="background:var(--accent);" onclick="showZoom3DNow()">🧊 الانتقال للـ 3D فوراً</button>
+        </div>
+
+        <div id="zoom-example-text" style="background:#f8fafc; padding:16px; border-radius:14px; border:1px solid var(--border);">
+          <div class="en-sentence" id="ex-en-desc">Water Molecule (0.1 nm): We start at a real water pond and zoom in billions of times to reach a single H₂O molecule measuring 0.1 nanometers.</div>
+          <div class="ar-sentence" id="ex-ar-desc"><strong>1. جزيء الماء (0.1 nm):</strong> نبدأ من بركة المياه ونقرب مليارات المرات لنصل إلى جزيء ماء واحد (H₂O) حجمه 0.1 نانومتر.</div>
+        </div>
+      </div>
+
+      <!-- مسرح الزووم الموحد -->
+      <div class="visual-stage" id="zoom-unified-stage">
+        <button class="btn-fs-bottom-left" onclick="toggleFullScreen(document.getElementById('zoom-unified-stage'))">⛶ ملء الشاشة</button>
+        <div class="custom-video-wrap" id="zoom-video-container">
+          <video id="zoom-macro-video" src="gemini_generated_video_855f0739.mp4" playsinline autoplay muted></video>
+        </div>
+        <model-viewer id="zoom-glb-viewer" src="h2o_molecule.glb" camera-controls auto-rotate shadow-intensity="1" style="position:absolute; inset:0; width:100%; height:100%; z-index:5; opacity:0; pointer-events:none; transition: opacity 0.3s ease;"></model-viewer>
+        <div id="zoom-3d-stage" style="position:absolute; inset:0; width:100%; height:100%; z-index:4; opacity:0; pointer-events:none; transition: opacity 0.3s ease;"></div>
+      </div>
+    </section>
+
+    <!-- مشهد الـ 7 أمثلة معاً 3D -->
+    <section class="split-row">
+      <div>
+        <div class="bilingual-card">
+          <div class="en-sentence">All 7 Examples Side-by-Side in 3D: From the 0.1 nm Water Molecule and 0.5 nm Benzene, through Carbon Nanotubes and the 10 nm Gold Nanoparticle inside the nanoscale, up to the 1 µm Virus, 5 µm Red Blood Cell, and 100 µm Human Hair.</div>
+          <div class="ar-sentence"><strong>مقارنة الأمثلة السبعة جنباً إلى جنب بالـ 3D:</strong> ترتيب الأمثلة من الأصغر للأكبر: جزيء الماء <span class="math-badge">0.1 nm</span>، البنزين <span class="math-badge">0.5 nm</span>، أنبوبة الكربون النانوية، جسيم الذهب النانوي <span class="math-badge">10 nm</span>، الفيروس <span class="math-badge">1 µm</span>، خلية الدم الحمراء <span class="math-badge">5 µm</span>، وشعرة الإنسان <span class="math-badge">100 µm</span>.</div>
+        </div>
+      </div>
+
+      <div class="visual-stage">
+        <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+        <div id="lineup-3d-stage" class="canvas-3d-box"></div>
+      </div>
+    </section>
+
+    <!-- أسئلة عم سمسم وعم سمير (القسم الثاني) -->
+    <div class="samir-qa-section">
+      <div class="samir-header">
+        <span class="samir-badge">🧠 أسئلة عم سمسم وعم سمير (القسم الثاني)</span>
+      </div>
+
+      <div class="qa-block">
+        <div class="q-title">سؤال 1 من عم سمسم:</div>
+        <div class="en-sentence">Uncle Semsem is confused: Why did scientists set the starting line of the nanoscale at 1 nanometer and kick out the water molecule (0.1 nm) and benzene (0.5 nm) even though they are super small?</div>
+        <div class="ar-sentence">عم سمسم دلوقتي مش فاهم: ليه العلماء حطوا بداية مقياس النانو من عند 1 نانومتر بالظبط، وطردوا جزيء المية (0.1 nm) والبنزين (0.5 nm) بره مقياس النانو مع إنهم صغيرين جداً؟</div>
+        <div class="answer-box">
+          <div class="en-sentence">A single brick by itself is not a "building"—you need to stack dozens of bricks together to make a structure with rooms and walls. Similarly, a single water molecule (0.1 nm) is just one isolated brick of regular chemistry. Special nanoscale powers only appear when tens or hundreds of atoms group together to form a team measuring between 1 and 100 nanometers!</div>
+          <div class="ar-sentence">تخيل كده إننا بنبني عمارة.. هل ينفع تجيب طوبة واحدة وتقول عليها عمارة؟ أكيد لأ! لازم ترص طوب كتير جنب بعض عشان تبني حاجة ليها شكل وقيمة. نفس الفكرة بالظبط مع جزيء المية أو البنزين؛ دول مجرد "طوبة واحدة" لوحدها في الكيمياء العادية، وعشان كده العلماء مش بيعتبروهم نانو. خصائص النانو السحرية دي مابتظهرش غير لما يتجمع شوية ذرات حلوين مع بعض ويعملوا شلة أو جسيم حجمه من 1 لـ 100 نانومتر، وقتها بس نقدر نقول أهلاً بيك في عالم النانو!</div>
+          <div class="samir-stamp">✅ دي الإجابة يا عم سمسم!</div>
+        </div>
+      </div>
+
+      <div class="qa-block">
+        <div class="q-title">سؤال 2 من عم سمير:</div>
+        <div class="en-sentence">Uncle Samir asks: In our size chart, a Virus is 1 micrometer (1000 nanometers), while a Gold Nanoparticle is only 10 nanometers. How can a tiny nanoparticle that is 100 times smaller than the virus defeat and paralyze it?</div>
+        <div class="ar-sentence">طب عم سمير بيسأل سؤال تاني: في المقارنة بتاعتنا، الفيروس حجمه 1 ميكرومتر (يعني 1000 نانومتر)، وجسيم النانو حجمه 10 نانومتر بس (يعني الفيروس أكبر منه بـ 100 مرة!)؛ إزاي جسيم النانو الصغير ده يقدر يغلب الفيروس ويشل حركته؟</div>
+        <div class="answer-box">
+          <div class="split-row" style="margin: 10px 0; padding: 16px; border:none; box-shadow:none; background:#f8fafc;">
+            <div>
+              <div class="en-sentence">Imagine you are a giant, strong guy, and suddenly 100 little kids jump on you from every single angle—holding your hands, legs, and back at the exact same time. You won't be able to move a muscle! That is exactly what happens to the virus: because nanoparticles (10 nm) are 100 times smaller than the virus, hundreds of them swarm the virus from all sides and lock it down completely!</div>
+              <div class="ar-sentence">تخيل إنك <strong>شحط كبير وعريض</strong>، وفجأة هجم عليك 100 عيل صغير من كل ناحية! اللي متبت في إيدك، واللي ماسك في رجلك، واللي راكب فوق كتافك.. هتلاقي نفسك متكتف ومش عارف تتحرك خطوة واحدة! ده بالظبط اللي بيحصل مع الفيروس: جسيمات النانو دي أصغر من الفيروس بـ 100 مرة، فبتتلم عليه من كل حتة وتلزق في الشوك بتاعه وتكتفه تماماً، فميقدرش يخترق خلايا جسمنا ويفضل عاجز!</div>
+              <div class="samir-stamp">✅ دي الإجابة يا عم سمير!</div>
+            </div>
+            <div class="visual-stage img-stage">
+              <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+              <div class="real-img-wrapper">
+                <img src="WhatsApp Image 2026-10-27 at 3.01.31 AM.jpeg" alt="الشحط والـ 100 عيل">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- =========================================================
+         القسم الثالث: 3- What are Nanomaterials?
+         ========================================================= -->
+    <div class="section-banner">
+      <h2>3- What are Nanomaterials? | ثالثاً: ما هي المواد النانوية وأمثلتها؟</h2>
+    </div>
+
+    <section class="split-row">
+      <div>
+        <div class="bilingual-card">
+          <div class="en-sentence">Nanomaterials are materials that have at least one dimension in the nanoscale range.</div>
+          <div class="ar-sentence">المواد النانوية هي المواد اللي عندها <strong>بُعد واحد على الأقل</strong> (طول أو عرض أو ارتفاع) بيقع في نطاق مقياس النانو (من 1 لـ 100 نانومتر).</div>
+        </div>
+        <div class="bilingual-card">
+          <div class="en-sentence">Examples of Nanomaterials: 1. Gold nanoparticles, 2. Silver nanoparticles, 3. Carbon nanotubes.</div>
+          <div class="ar-sentence"><strong>أمثلة المواد النانوية:</strong><br>1. جسيمات الذهب النانوية.<br>2. جسيمات الفضة النانوية.<br>3. أنابيب الكربون النانوية.</div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;">
+          <button class="btn-action" onclick="switchNanomatModel('gold')">🟡 Gold Nanoparticles</button>
+          <button class="btn-action" onclick="switchNanomatModel('silver')">⚪ Silver Nanoparticles</button>
+          <button class="btn-action" onclick="switchNanomatModel('cnt')">🧪 Carbon Nanotubes</button>
+        </div>
+      </div>
+
+      <div class="visual-stage">
+        <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+        <div id="nanomat-3d-stage" class="canvas-3d-box"></div>
+        <model-viewer id="nanomat-cnt-viewer" src="nanotube.glb" camera-controls auto-rotate shadow-intensity="1" style="display:none;"></model-viewer>
+      </div>
+    </section>
+
+    <!-- أسئلة عم سمسم وعم سمير (القسم الثالث) -->
+    <div class="samir-qa-section">
+      <div class="samir-header">
+        <span class="samir-badge">🧠 أسئلة عم سمسم وعم سمير (القسم الثالث)</span>
+      </div>
+
+      <div class="qa-block">
+        <div class="q-title">سؤال 1 من عم سمسم:</div>
+        <div class="en-sentence">Uncle Semsem asks: Why did the definition say "at least one dimension"? If I have a plastic wrap sheet that is 2 meters long and 1 meter wide, how can it be a nanomaterial?</div>
+        <div class="ar-sentence">عم سمسم دلوقتي مش فاهم ليه التعريف قال "بُعد واحد على الأقل"؟ يعني لو عندي طبقة تغليف طولها مترين وعرضها متر وشايفها بعيني، إزاي أسميها مادة نانوية؟</div>
+        <div class="answer-box">
+          <div class="split-row" style="margin: 10px 0; padding: 16px; border:none; box-shadow:none; background:#f8fafc;">
+            <div>
+              <div class="en-sentence">Look at the ultra-thin screen protector between fingers: even though it covers the entire phone screen, its thickness is only a few nanometers thin! Because electrons are squeezed inside that nanoscale thickness, the entire sheet behaves with special nanoscale physics.</div>
+              <div class="ar-sentence"><strong>زي ما هو باين قدامك وشايفه بعينيك الاتنين في الصورة اللي جنبك:</strong> دي طبقة الحماية الرقيقة جداً اللي بنحطها على شاشة الموبايل وماسكينها بين الصوابع. هي آه عريضة ومغطية شاشة الموبايل كلها، بس "السمك أو التخن" بتاعها رقيق جداً لدرجة إنه يقع في مقياس النانو! طالما الذرات اتزنقت في السمك النانوي ده، المادة بتكتسب خصائص النانو فوراً حتى لو طولها وعرضها كبار شايفينهم بعنينا.</div>
+              <div class="samir-stamp">✅ دي الإجابة يا عم سمسم!</div>
+            </div>
+            <div class="visual-stage img-stage">
+              <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+              <div class="real-img-wrapper">
+                <img src="image_e7abb16.jpg" alt="سمك طبقة الحماية النانوية بين الأصابع">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-block">
+        <div class="q-title">سؤال 2 من عم سمير:</div>
+        <div class="en-sentence">Uncle Samir asks: Pencil lead (graphite) and Carbon Nanotubes are both made 100% of pure carbon atoms. Why does pencil lead snap with your finger while a Carbon Nanotube is stronger than steel?</div>
+        <div class="ar-sentence">طب عم سمير بيسأل سؤال تاني: هو مش سن القلم الرصاص وأنابيب الكربون النانوية الاتنين مكونين من ذرات كربون بس؟ أمال ليه سن القلم الرصاص بيتقطم في إيدينا بينما أنبوبة الكربون أقوى من الحديد الصلب بكتير؟</div>
+        <div class="answer-box">
+          <div class="split-row" style="margin: 10px 0; padding: 16px; border:none; box-shadow:none; background:#f8fafc;">
+            <div>
+              <div class="en-sentence">Look at the playing cards picture: loose paper cards stacked without glue slide off and fly away with the slightest breeze—that's pencil graphite, loose carbon layers sliding over each other. But when you glue the cards solidly together and roll them into a locked, bonded tube, they become an unbreakable pillar!</div>
+              <div class="ar-sentence">بص لصورة الكوتشينة دي <strong>زي ما هو باين قدامك:</strong> ورق الكوتشينة اللي على اليمين سايب فوق بعضه من غير أي لزق، فأول ما المروحة اشتغلت الورق اتزحلق وطار في ثواني (ده بالظبط سن القلم الرصاص، طبقات كربون سايبة بتتزحلق وتتقصف بسهولة). لكن رزمة الكوتشينة اللي في النص <strong>مصبوب عليها شمع ولزق ماسك كل ورقة في اللي جنبها بقوة</strong>، فمهما شغلت عليها المروحة أو ضغطت عليها بقت كتلة صلبة واحدة مابتتكسرش! أنبوبة الكربون النانوية معمولة بنفس الفكرة: ذرات الكربون ملحومة ومترابطة في شكل أسطوانة متماسكة تماسك جبار.</div>
+              <div class="samir-stamp">✅ دي الإجابة يا عم سمير!</div>
+            </div>
+            <div class="visual-stage img-stage">
+              <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+              <div class="real-img-wrapper">
+                <img src="download.jfif" alt="الكوتشينة السايبة والمثبتة أمام المروحة">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- =========================================================
+         القسم الرابع: 4- Properties of Nanomaterials
+         ========================================================= -->
+    <div class="section-banner">
+      <h2>4- Properties of Nanomaterials | رابعاً: خصائص المواد النانوية وسرعة التفاعل</h2>
+    </div>
+
+    <section class="split-row">
+      <div>
+        <div class="bilingual-card">
+          <div class="en-sentence">Nanomaterials may have special properties because of their very small size.</div>
+          <div class="ar-sentence">المواد النانوية ليها خصائص مميزة واستثنائية بسبب حجمها الصغير جداً.</div>
+        </div>
+        <div class="bilingual-card">
+          <div class="en-sentence">1. Large Surface Area: They have a large surface area compared with their volume.</div>
+          <div class="ar-sentence"><strong>1. مساحة سطح كبيرة:</strong> المواد النانوية بتتميز إن مساحة سطحها الخارجية كبيرة جداً مقارنة بحجمها الثابت.</div>
+        </div>
+        <div class="bilingual-card">
+          <div class="en-sentence">2. High Reactivity: Some nanomaterials react faster than large particles of the same material.</div>
+          <div class="ar-sentence"><strong>2. نشاط كيميائي عالٍ:</strong> بعض المواد النانوية بتتفاعل بشكل أسرع بكثير جداً من القطع الكبيرة لنفس المادة.</div>
+        </div>
+        <div class="bilingual-card">
+          <div class="en-sentence">Easy Everyday Example (Potato Chips & Charcoal): A whole potato dropped in hot oil cooks slowly because oil only touches the outside peel, while slicing it into thin chips exposes all the hidden inner surfaces so it fries in seconds!</div>
+          <div class="ar-sentence"><strong>مثال بسيط جداً (البطاطس الشيبسي والفحم):</strong> لو حطيت بطاطساية كاملة سليمة في الزيت السخن، الزيت هيلمس القشرة اللي بره بس فهتاخد وقت طويل؛ لكن لما تقطعها شرائح شيبسي رفيعة، الحجم هو هو بس إنت كشفت كل الأجزاء اللي جوه للزيت في نفس اللحظة فتتحمر في ثواني! ونفس الكلام لما نكسر حتة فحم كبيرة لحتت صغيرة، النار والهواء بيلمسوا كل الذرات مع بعض فتولع فوراً.</div>
+        </div>
+      </div>
+
+      <div class="visual-stage" id="reactivity-stage">
+        <button class="btn-fs-bottom-left" onclick="toggleFullScreen(document.getElementById('reactivity-stage'))">⛶ ملء الشاشة</button>
+        <div class="custom-video-wrap" id="reactivity-video-container">
+          <video id="reactivity-real-video" src="WhatsApp Video 2026-10-27 at 8.25.16 PM.mp4" playsinline autoplay muted></video>
+        </div>
+        
+        <div id="reactivity-end-comment" class="reactivity-end-card">
+          <span style="background:var(--accent); color:#fff; padding:6px 18px; border-radius:999px; font-weight:800; margin-bottom:14px; font-size:1.05rem;">💡 ملاحظة علمية هامة في نهاية التجربة</span>
+          <div class="en-sentence" style="background:rgba(255,255,255,0.12); color:#fff; border-left-color:var(--cyan-vivid); text-align:center; font-size:1.05rem;">
+            Notice how the solid iron bar does not catch fire when touching the flame, while the nano-iron powder bursts into sparks instantly in the air!
+          </div>
+          <p style="font-size:1.1rem; margin:14px 0 20px; color:#f1f5f9; line-height:1.8;">
+            <strong>زي ما هو باين قدامك وشايفه بعينيك الاتنين في الفيديو:</strong> سبيكة الحديد الصلبة مبترضاش تولع بالنار، بينما بودرة الحديد النانوي أول ما رشتها في الهوا ولعت لوحدها واشتعلت في ثانية واحدة! السبب هو <strong>الزيادة الهائلة في مساحة السطح</strong>: في النانو كل ذرات الحديد اتكشفت للأكسجين مع بعض، فأتفاعلت واشتعلت في لحظتها!
+          </p>
+          <button class="btn-action" style="background:var(--accent);" onclick="restartReactivityVideo()">🎬 إعادة تشغيل الفيديو</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- أسئلة عم سمسم وعم سمير (القسم الرابع) -->
+    <div class="samir-qa-section">
+      <div class="samir-header">
+        <span class="samir-badge">🧠 أسئلة عم سمسم وعم سمير (القسم الرابع)</span>
+      </div>
+
+      <div class="qa-block">
+        <div class="q-title">سؤال 1 من عم سمسم:</div>
+        <div class="en-sentence">Uncle Semsem asks: Why is an atom sitting on the outside surface so eager and hungry to react compared to an atom sitting deep inside the material?</div>
+        <div class="ar-sentence">عم سمسم دلوقتي مش فاهم: ليه الذرة اللي قاعدة على السطح بره بتبقى "جعانة" ومتحمسة للتفاعل أسرع بكتير من الذرة اللي قاعدة جوه قلب المادة؟</div>
+        <div class="answer-box">
+          <div class="split-row" style="margin: 10px 0; padding: 16px; border:none; box-shadow:none; background:#f8fafc;">
+            <div>
+              <div class="en-sentence">Look at the people holding hands picture: the people in the middle have both hands locked by friends on left and right, so they can't grab anything. But the guy on the outer edge has a free hand reaching out in the air—ready to grab the money instantly! That's a surface atom: it has "free unbonded hands" eager to grab and react.</div>
+              <div class="ar-sentence">تخيل شلة صحاب ماشيين في الشارع وماسكين إيدين بعض جامد صف واحد <strong>زي ما هو باين قدامك في الصورة</strong>. اللي في النص إيديه الاتنين مشغولين (ماسك واحد يمينه وواحد شماله)، فلو 100 جنيه وقعت قدامه مش هيعرف يوطي يجيبها. لكن صاحبهم اللي على الحرف بره خالص، عنده إيد فاضية مش ماسكة في حد! فأول ما بيلمح الـ 100 جنيه بيخطفها في ثانية! ذرات السطح في النانو عاملة زي صاحبهم اللي على الحرف ده: إيديها الكيميائية فاضية وحرة، فأول ما تقابل مادة تانية بتهجم تمسك فيها وتتفاعل معاها طلقة!</div>
+              <div class="samir-stamp">✅ دي الإجابة يا عم سمسم!</div>
+            </div>
+            <div class="visual-stage img-stage">
+              <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+              <div class="real-img-wrapper">
+                <img src="Gemini_Generated_Image_5a8kd5a8kd5a8kd5.jfif" alt="اليد الحرة والتفاعل">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-block">
+        <div class="q-title">سؤال 2 من عم سمير:</div>
+        <div class="en-sentence">Uncle Samir asks: Iron is a heavy metal that doesn't catch fire when we hold a match to an iron nail. Why does nanoscale iron powder burst into flames the moment it touches air?</div>
+        <div class="ar-sentence">طب عم سمير بيسأل سؤال تاني: المسمار الحديد لو قربت منه كبريت مبيولعش، أمال ليه بودرة الحديد النانوية أول ما نرشها في الهوا بتولع لوحدها زي الألعاب النارية؟</div>
+        <div class="answer-box">
+          <div class="en-sentence">An iron nail actually reacts with oxygen very slowly (that's rusting), and the tiny heat it makes spreads out and disappears into the thick metal nail. In nano-iron powder, billions of iron atoms touch oxygen at the exact same millisecond, releasing all that heat at once so it ignites immediately!</div>
+          <div class="ar-sentence">المسمار الحديد بيتفاعل مع أكسجين الهوا ببطء شديد على مدار شهور (واللي بنسميه الصدأ)، والحرارة البسيطة اللي بتطلع بتتشتت وتبرد جوه جسم المسمار التخين. إنما في بودرة الحديد النانوية، مليارات ذرات الحديد المكشوفة بتتفاعل مع الأكسجين في نفس جزء من الثانية، فالحرارة دي كلها بتطلع مرة واحدة وتخلي الحديد يشتعل في الهوا فوراً!</div>
+          <div class="samir-stamp">✅ دي الإجابة يا عم سمير!</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- =========================================================
+         القسم الخامس: 5- Applications of Nanochemistry
+         ========================================================= -->
+    <div class="section-banner">
+      <h2>5- Applications of Nanochemistry | خامساً: تطبيقات كيمياء النانو الأربعة</h2>
+    </div>
+
+    <!-- التطبيق 1: الطب وكرة البوكي 3D -->
+    <section class="split-row">
+      <div>
+        <div class="bilingual-card">
+          <div class="en-sentence">1. Medicine: Nanoparticles can help deliver medicine to specific parts of the body. Example: Bucky Ball (C₆₀).</div>
+          <div class="ar-sentence"><strong>1. الطب (Medicine):</strong> بتساعد الجسيمات النانوية في توصيل الدواء بدقة لأجزاء محددة جوه الجسم، وأشهر مثال عليها هو <strong>كرة البوكي (Bucky Ball)</strong>.</div>
+        </div>
+        <div class="bilingual-card">
+          <div class="en-sentence">Example A (Bucky Ball C₆₀): A hollow soccer-ball-shaped cage made of 60 carbon atoms that hides medicine inside its core and releases it only at diseased cells. Example B (Gold Nanoshells): Nanoparticles that gather inside tumors and use infrared laser light to burn the tumor without surgery.</div>
+          <div class="ar-sentence"><strong>مثال (أ) كرة البوكي (C₆₀):</strong> كورة كربونية مفرغة من جوه بتتكون من 60 ذرة كربون وشكلها زي كرة القدم بالظبط، بنحفظ الدواء جواها عشان يمشي في الدم بأمان وميخرجش غير عند الخلية المريضة بس.<br><strong>مثال (ب) كبسولات الذهب النانوية:</strong> بتتجمع جوه الأورام وبنسلط عليها أشعة تحت حمراء عشان تحولها لحرارة تقضي على الورم من غير جراحة.</div>
+        </div>
+      </div>
+
+      <div class="visual-stage">
+        <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+        <div class="sketchfab-clean-crop">
+          <iframe title="Wireframe Shape Sierpinski Buckyball" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" src="https://sketchfab.com/models/c98e4836e1a049fe9fcca6d1e7489a19/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_hint=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_annotations=0"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- التطبيق 2 و 3: مستحضرات التجميل وتنقية المياه -->
+    <section class="split-row">
+      <div>
+        <div class="bilingual-card">
+          <div class="en-sentence">2. Cosmetics: Nanoparticles in sunscreens protect the skin from UV rays without leaving a visible white paste. Nano-capsules also deliver vitamins deep into the skin.</div>
+          <div class="ar-sentence">
+            <strong>2. مستحضرات التجميل (Cosmetics) - الشرح المبسط:</strong><br>
+            • <strong>كريم واقي الشمس:</strong> زمان كان بيسيب طبقة جيرية بيضاء تخينة على الوش بتخلي الواحد كأنه حاطط دهان؛ حالياً بنحط فيه جزيئات نانوية (أكسيد زنك وتيتانيوم) حجمها دقيق جداً فبتكون <strong>شفافة 100% ومش بتبان على البشرة خالص</strong>، وفي نفس الوقت بتشتغل زي درع بيعكس أشعة الشمس الضارة.<br>
+            • <strong>كبسولات النانو الدهنية:</strong> عاملة زي "تاكسي ذري صغير" بيحفظ الفيتامينات جواه ويوصل بيها لطبقات الجلد العميقة عشان يغذيها.
+          </div>
+        </div>
+        <div class="bilingual-card">
+          <div class="en-sentence">3. Water Purification: Nanomaterials easily remove tiny pollutants from water using nano-filters and magnetic particles.</div>
+          <div class="ar-sentence">
+            <strong>3. تنقية وتطهير المياه (Water Purification) - الشرح المبسط:</strong><br>
+            • <strong>فلاتر أنابيب الكربون النانوية:</strong> تخيل "مصفاة شاي" ثقوبها دقيقة بالنانومتر؛ بتعدي جزيء المية الصغير بسهولة، لكن أي بكتيريا أو أملاح ضارة بتتحبس بره ومبتعرفش تعدي.<br>
+            • <strong>جسيمات أكسيد الحديد المغناطيسية:</strong> بنرمي في المية الملوثة حبيبات حديد نانوية بتلزق في السموم، وبعدين نقرب <strong>مغناطيس كبير من المية</strong>، فيسحب حبيبات الحديد بالسموم اللي لزقت فيها لبره في ثواني ويسيب المية نظيفة!
+          </div>
+        </div>
+      </div>
+
+      <div class="visual-stage img-stage">
+        <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+        <div class="real-img-wrapper">
+          <img id="img-cosmetics-water" src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1000&q=85" alt="Water Filtration and Cosmetics">
+        </div>
+      </div>
+    </section>
+
+    <!-- التطبيق 4: الإلكترونيات ومعالج AMD Ryzen 3D -->
+    <section class="split-row">
+      <div>
+        <div class="bilingual-card">
+          <div class="en-sentence">4. Electronics: Nanotechnology helps make smaller electronic devices.</div>
+          <div class="ar-sentence"><strong>4. الإلكترونيات (Electronics):</strong> بتساعد تكنولوجيا النانو إننا نصنع أجهزة إلكترونية أصغر في الحجم وأسرع في الأداء.</div>
+        </div>
+        <div class="bilingual-card">
+          <div class="en-sentence">Example A (3nm Processor & Transistors): Inside modern processors sit billions of tiny nanoscale switches called Transistors (3 nanometers wide). Shrinking them to the nanoscale lets engineers fit billions more switches into a tiny chip, making devices super fast while saving power.</div>
+          <div class="ar-sentence"><strong>مثال (أ) المعالجات 3 نانومتر والترانزستورات:</strong> جوه المعالج فيه مليارات المفاتيح الإلكترونية النانوية اللي بنسميها <strong>الترانزستورات (Transistors)</strong> وحجمها 3 نانومتر بس. تصغير الترانزستور لحجم النانو خلانا نقدر نحط مليارات المفاتيح في شريحة صغيرة جداً، وده خلى الأجهزة سريعة جداً ووفر في استهلاك البطارية.</div>
+        </div>
+      </div>
+
+      <div class="visual-stage">
+        <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+        <div class="sketchfab-clean-crop">
+          <iframe title="AMD Ryzen AM4 CPU" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" src="https://sketchfab.com/models/b51dd1ed7b0a49f885ea0d03929995c3/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_hint=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_annotations=0"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- أسئلة عم سمسم وعم سمير (القسم الخامس) -->
+    <div class="samir-qa-section">
+      <div class="samir-header">
+        <span class="samir-badge">🧠 أسئلة عم سمسم وعم سمير (القسم الخامس)</span>
+      </div>
+
+      <div class="qa-block">
+        <div class="q-title">سؤال 1 من عم سمسم:</div>
+        <div class="en-sentence">Uncle Semsem asks: Does the Bucky Ball have eyes or GPS? How does it know which cell in the body is sick so it only drops the medicine there and skips healthy cells?</div>
+        <div class="ar-sentence">عم سمسم دلوقتي مش فاهم: هي كرة البوكي ليها عينين أو GPS؟ إزاي وهي ماشية في الدم بتعرف الخلية المريضة وتفتح عندها بس ومتفضيش الدواء على الخلايا السليمة؟</div>
+        <div class="answer-box">
+          <div class="split-row" style="margin: 10px 0; padding: 16px; border:none; box-shadow:none; background:#f8fafc;">
+            <div>
+              <div class="en-sentence">Look at the Buckyball inside the protein picture: It works exactly like a "Key and Lock". Sick cancer cells have special receptor proteins on their outer wall acting as a "lock". Scientists attach a matching molecular "key" to the Bucky Ball. As it floats in the blood, it ignores all healthy doors, and only docks inside the exact pocket of the sick cell to deliver the drug!</div>
+              <div class="ar-sentence"><strong>زي ما هو باين قدامك وشايفه بعينيك الاتنين في الصورة التوضيحية اللي جنبك:</strong> الفكرة كلها شغالة بنظام <strong>"المفتاح والقفل"</strong>. الخلايا المريضة أو السرطانية بيكون على جدارها من بره تجاويف وبروتينات معينة اسمها (Receptor) عاملة زي "القفل" بالظبط ومش موجودة في الخلايا السليمة. العلماء بيركبوا على ضهر كرة البوكي "مفتاح كيميائي" (Ligand) ميركبش غير في تجويف الخلية المريضة دي! فطول ما الكرة ماشية في الدم جنب خلايا سليمة مبتفتحش، وأول ما توصل للخلية المريضة يعشق المفتاح في القفل وتفرغ الدواء في قلب الورم مباشرة!</div>
+              <div class="samir-stamp">✅ دي الإجابة يا عم سمسم!</div>
+            </div>
+            <div class="visual-stage img-stage">
+              <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+              <div class="real-img-wrapper">
+                <img src="image_2e8b72c0.jpg" alt="كرة البوكي بنظام القفل والمفتاح في البروتين">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="qa-block">
+        <div class="q-title">سؤال 2 من عم سمير:</div>
+        <div class="en-sentence">Uncle Samir asks: Since shrinking smartphone transistors from 10nm to 3nm made phones faster, why can't we shrink them down to 0.1 nanometers and make an infinitely fast phone?</div>
+        <div class="ar-sentence">طب عم سمير بيسأل سؤال تاني: طالما كل ما نصغر الترانزستور في معالج الموبايل (من 10 نانو لـ 3 نانو) الموبايل بيبقى أسرع، ليه منفضلش نصغره لحد 0.1 نانومتر؟ إيه اللي مانع العلماء؟</div>
+        <div class="answer-box">
+          <div class="split-row" style="margin: 10px 0; padding: 16px; border:none; box-shadow:none; background:#f8fafc;">
+            <div>
+              <div class="en-sentence">Think of a Transistor as a water faucet valve that opens and closes to control electricity (1 and 0). If you make the valve door thinner than 1 nanometer (just 2 or 3 atoms thick), electrons act like ghosts and walk right through the closed solid door! The faucet can never shut off, electricity leaks continuously, and the chip burns up with errors.</div>
+              <div class="ar-sentence">
+                <strong>الإجابة المبسطة جداً:</strong><br>
+                الترانزستور ده باختصار عبارة عن <strong>"محبس مياه أو باب بيفتح ويقفل"</strong> عشان يعدي تيار الكهرباء أو يمنعه (وده اللي بيعمل لغة الكمبيوتر 1 و 0):<br>
+                • لما الباب يكون مقفول = الكهرباء تقف (0).<br>
+                • لما الباب يفتح = الكهرباء تعدي (1).<br><br>
+                <strong>المشكلة بقى إننا لو صغرنا الباب ده أوي:</strong> لدرجة إنه يبقى أقل من 1 نانومتر (يعني سمكه ذرتين تلاتة بس زي ورقة خفيفة)، بتحصل مصيبة فيزيائية غريبة اسمها <strong>"النفق الكمي (Quantum Tunneling)"</strong>؛ <strong>زي ما هو باين قدامك في صورة الشبح اللي جنبك دي بالظبط</strong>: الإلكترونات بتتصرف زي "الأشباح اللي بتخترق الحيطان"، وتعدي من قلب الباب وهو مقفول بالضبة والمفتاح للناحية التانية!<br>
+                ساعتها المحبس مبقاش ليه أي لازمة ومبيعرفش يقفل الكهرباء، فتفضل الكهرباء بتسرب على طول، والمعالج يسخن ويولع ويطلع حسابات كلها غلط! عشان كده 1 نانومتر هو الخط الأحمر اللي مفيش شركة تقدر تعديه.
+              </div>
+              <div class="samir-stamp">✅ دي الإجابة يا عم سمير!</div>
+            </div>
+            <div class="visual-stage img-stage">
+              <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
+              <div class="real-img-wrapper">
+                <img src="download (1).jfif" alt="الشبح المار عبر بوابة الترانزستور - النفق الكمي">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         تذييل الموقع: تم صنع وبرمجة الموقع
+         ========================================================= -->
+    <footer class="site-footer">
+      <div class="footer-en">This website was created and programmed by</div>
+      <div class="footer-ar">تم صنع وبرمجة هذا الموقع بواسطة</div>
+      <div class="footer-img-wrap">
+        <img src="Gemini_Generated_Image_as058aas058aas05.jfif" alt="Empror Yahorn - Eng: Youssef Elahariry" style="width: 100%; height: auto; object-fit: contain;">
+      </div>
+    </footer>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // وظيفة ملء الشاشة الموحدة
+    // =========================================================================
+    function toggleFullScreen(elem) {
+      if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+          elem.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // =========================================================================
+    // مساعد Three.js
+    // =========================================================================
+    function createPBRScene(containerId, cameraPos = [0, 2, 7]) {
+      const container = document.getElementById(containerId);
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xf1f5f9);
+
+      const camera = new THREE.PerspectiveCamera(45, (container.clientWidth || 600) / (container.clientHeight || 480), 0.1, 1000);
+      camera.position.set(...cameraPos);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(container.clientWidth || 600, container.clientHeight || 480);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.2;
+      container.innerHTML = '';
+      container.appendChild(renderer.domElement);
+
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.85);
+      scene.add(ambient);
+
+      const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+      keyLight.position.set(8, 12, 10);
+      scene.add(keyLight);
+
+      const rimLight = new THREE.PointLight(0x38bdf8, 1.1, 30);
+      rimLight.position.set(-8, 5, -6);
+      scene.add(rimLight);
+
+      const warmLight = new THREE.PointLight(0xffd700, 0.9, 25);
+      warmLight.position.set(6, -6, 5);
+      scene.add(warmLight);
+
+      const onResize = () => {
+        if (!container.clientWidth) return;
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      };
+      window.addEventListener('resize', onResize);
+      document.addEventListener('fullscreenchange', onResize);
+
+      return { scene, camera, renderer, controls, container };
+    }
+
+    // =========================================================================
+    // القسم الثاني: الـ 7 أمثلة 
+    // =========================================================================
+    const zoomExamplesData = [
+      {
+        video: 'gemini_generated_video_855f0739.mp4',
+        glb: 'h2o_molecule.glb',
+        useThree: false,
+        en: 'Water Molecule (0.1 nm): We start at a real water pond and zoom in billions of times to reach a single H₂O molecule measuring 0.1 nanometers.',
+        ar: '<strong>1. جزيء الماء (0.1 nm):</strong> نبدأ من بركة المياه ونقرب مليارات المرات لنصل إلى جزيء ماء واحد (H₂O) حجمه 0.1 نانومتر.'
+      },
+      {
+        video: 'gemini_generated_video_6b0c100f.mp4',
+        glb: 'chemistry_benzene.glb',
+        useThree: false,
+        en: 'Benzene Molecule (0.5 nm): Zooming in from liquid petroleum fuel down to a single hexagonal C₆H₆ benzene ring measuring 0.5 nanometers across.',
+        ar: '<strong>2. جزيء البنزين (0.5 nm):</strong> نقرب من الوقود السائل لنصل إلى حلقة البنزين السداسية (C₆H₆) المكونة من 6 ذرات كربون و6 ذرات هيدروجين بحجم 0.5 نانومتر.'
+      },
+      {
+        video: 'dreamina-2026-10-27-5519-A seamless, continuous scientific 3D cin....mp4',
+        glb: 'nanotube.glb',
+        useThree: false,
+        en: 'Carbon Nanotube (~1–2 nm diameter): Zooming from pencil graphite into a rolled hexagonal graphene cylinder whose diameter sits inside the nanoscale.',
+        ar: '<strong>3. أنبوبة الكربون النانوية (Carbon Nanotube):</strong> نقرب من جرافيت القلم الرصاص لنرى الشبكة السداسية الملفوفة كأسطوانة مفرغة قطرها داخل مقياس النانو.'
+      },
+      {
+        video: 'WhatsApp Video 2026-10-27 at 1.23.34 AM.mp4',
+        glb: null,
+        useThree: true,
+        threeType: 'gold',
+        en: 'Gold Nanoparticle (10 nm): Zooming from a shiny yellow gold bar down to a 10-nanometer cluster of hundreds of gold atoms sitting right inside the 1–100 nm nanoscale.',
+        ar: '<strong>4. جسيم الذهب النانوي (10 nm):</strong> نقرب من سبيكة الذهب الصفراء لنفحص تجمعاً كروياً من مئات ذرات الذهب الصفراء اللامعة بحجم 10 نانومتر في قلب مقياس النانو.'
+      },
+      {
+        video: 'WhatsApp Video 2026-10-27 at 1.24.05 AM.mp4',
+        glb: 'virus_particle.glb',
+        useThree: false,
+        en: 'Virus Particle (1 µm): Measuring 1 micrometer (1,000 nanometers), this virus structure is 100 times larger than a 10 nm gold nanoparticle.',
+        ar: '<strong>5. الفيروس (1 µm):</strong> يبلغ حجمه في أمثلة الدرس 1 ميكرومتر (أي 1000 نانومتر)، وهو أكبر من جسيم الذهب النانوي بـ 100 مرة.'
+      },
+      {
+        video: 'WhatsApp Video 2026-10-27 at 1.24.14 AM.mp4',
+        glb: 'red_blood_cells_erythrocytes.glb',
+        useThree: false,
+        en: 'Red Blood Cell (5 µm): Zooming into a blood drop to inspect biconcave red blood cells measuring 5 micrometers across.',
+        ar: '<strong>6. خلية الدم الحمراء (5 µm):</strong> نقرب داخل قطرة الدم لنفحص خلايا الدم الحمراء التي يبلغ قطرها 5 ميكرومتر (أكبر من الفيروس بـ 5 مرات).'
+      },
+      {
+        video: 'WhatsApp Video 2026-10-27 at 2.04.13 AM.mp4',
+        glb: null,
+        useThree: true,
+        threeType: 'hair',
+        en: 'Human Hair Strand (100 µm): Zooming into a single hair cylinder measuring 100 micrometers thick (100,000 nanometers) with realistic overlapping keratin cuticle scales.',
+        ar: '<strong>7. شعرة الإنسان (100 µm):</strong> نقرب من خصلة الشعر إلى أسطوانة شعرة واحدة يبلغ سمكها 100 ميكرومتر مع طبقات وحراشف الكيراتين الواقعية من جميع الجوانب.'
+      }
+    ];
+
+    fetch('./').then(r => r.text()).then(html => {
+      const match = html.match(/href="([^"]*dreamina-2026-10-27-5519[^"]*\.mp4)"/i);
+      if (match && match[1]) {
+        zoomExamplesData[2].video = decodeURIComponent(match[1].split('/').pop());
+      }
+    }).catch(() => {});
+
+    const zoomCtx = createPBRScene('zoom-3d-stage', [0, 0.5, 6]);
+    const zoomModelGroup = new THREE.Group();
+    zoomCtx.scene.add(zoomModelGroup);
+
+    function buildCustomThreeModel(type, targetGroup) {
+      while (targetGroup.children.length > 0) {
+        targetGroup.remove(targetGroup.children[0]);
+      }
+
+      if (type === 'gold') {
+        const brightYellowGold = new THREE.MeshPhysicalMaterial({
+          color: 0xffd700,
+          emissive: 0xb45309,
+          emissiveIntensity: 0.12,
+          metalness: 0.95,
+          roughness: 0.1,
+          clearcoat: 1.0
+        });
+        for (let i = 0; i < 110; i++) {
+          const phi = Math.acos(1 - 2 * (i + 0.5) / 110);
+          const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+          const r = 1.65;
+          const atom = new THREE.Mesh(new THREE.SphereGeometry(0.32, 24, 24), brightYellowGold);
+          atom.position.set(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
+          targetGroup.add(atom);
+        }
+      } else if (type === 'silver') {
+        const brightSilver = new THREE.MeshPhysicalMaterial({
+          color: 0xf1f5f9,
+          emissive: 0x64748b,
+          emissiveIntensity: 0.08,
+          metalness: 0.92,
+          roughness: 0.12,
+          clearcoat: 1.0
+        });
+        for (let i = 0; i < 110; i++) {
+          const phi = Math.acos(1 - 2 * (i + 0.5) / 110);
+          const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+          const r = 1.65;
+          const atom = new THREE.Mesh(new THREE.SphereGeometry(0.32, 24, 24), brightSilver);
+          atom.position.set(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
+          targetGroup.add(atom);
+        }
+      } else if (type === 'hair') {
+        const cortexMat = new THREE.MeshPhysicalMaterial({
+          color: 0x27272a,
+          roughness: 0.38,
+          metalness: 0.15,
+          clearcoat: 0.85
+        });
+        const scaleMat = new THREE.MeshPhysicalMaterial({
+          color: 0x3f3f46,
+          roughness: 0.32,
+          metalness: 0.2,
+          clearcoat: 0.9,
+          side: THREE.DoubleSide
+        });
+        const medullaMat = new THREE.MeshPhysicalMaterial({
+          color: 0x18181b,
+          roughness: 0.5
+        });
+
+        const hairShaftGroup = new THREE.Group();
+        const coreCylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.92, 0.92, 4.8, 36), cortexMat);
+        hairShaftGroup.add(coreCylinder);
+
+        const innerMedulla = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 4.85, 24), medullaMat);
+        hairShaftGroup.add(innerMedulla);
+
+        const layers = 14;
+        const scalesPerLayer = 10;
+        for (let l = 0; l < layers; l++) {
+          const y = -2.1 + l * 0.32;
+          for (let s = 0; s < scalesPerLayer; s++) {
+            const angle = (s * (Math.PI * 2)) / scalesPerLayer + (l % 2) * 0.3;
+            const scaleGeo = new THREE.CylinderGeometry(1.03, 0.93, 0.36, 16, 1, true, angle, (Math.PI * 2) / scalesPerLayer + 0.15);
+            const scaleMesh = new THREE.Mesh(scaleGeo, scaleMat);
+            scaleMesh.position.y = y;
+            hairShaftGroup.add(scaleMesh);
+          }
+        }
+        hairShaftGroup.rotation.z = 0.45;
+        targetGroup.add(hairShaftGroup);
+      }
+    }
+
+    const macroVideoEl = document.getElementById('zoom-macro-video');
+    const videoWrapEl = document.getElementById('zoom-video-container');
+    const glbViewerEl = document.getElementById('zoom-glb-viewer');
+    const threeStageEl = document.getElementById('zoom-3d-stage');
+
+    macroVideoEl.muted = true;
+    macroVideoEl.volume = 0;
+
+    macroVideoEl.onended = () => {
+      showZoom3DNow();
+    };
+
+    function showZoom3DNow() {
+      macroVideoEl.pause();
+      videoWrapEl.style.opacity = '0';
+      videoWrapEl.style.pointerEvents = 'none';
+
+      const curData = zoomExamplesData[currentZoomIdx];
+      if (curData.useThree) {
+        threeStageEl.style.opacity = '1';
+        threeStageEl.style.pointerEvents = 'auto';
+        glbViewerEl.style.opacity = '0';
+        glbViewerEl.style.pointerEvents = 'none';
+        if (zoomCtx.container.clientWidth) {
+          zoomCtx.camera.aspect = zoomCtx.container.clientWidth / zoomCtx.container.clientHeight;
+          zoomCtx.camera.updateProjectionMatrix();
+          zoomCtx.renderer.setSize(zoomCtx.container.clientWidth, zoomCtx.container.clientHeight);
+        }
+      } else {
+        glbViewerEl.style.opacity = '1';
+        glbViewerEl.style.pointerEvents = 'auto';
+        threeStageEl.style.opacity = '0';
+        threeStageEl.style.pointerEvents = 'none';
+      }
+    }
+
+    function replayZoomVideo() {
+      glbViewerEl.style.opacity = '0';
+      glbViewerEl.style.pointerEvents = 'none';
+      threeStageEl.style.opacity = '0';
+      threeStageEl.style.pointerEvents = 'none';
+
+      videoWrapEl.style.opacity = '1';
+      videoWrapEl.style.pointerEvents = 'auto';
+      macroVideoEl.currentTime = 0;
+      macroVideoEl.muted = true;
+      macroVideoEl.volume = 0;
+      macroVideoEl.play().catch(() => {});
+    }
+
+    let currentZoomIdx = 0;
+    function selectZoomExample(idx) {
+      currentZoomIdx = idx;
+      const data = zoomExamplesData[idx];
+      document.getElementById('ex-en-desc').textContent = data.en;
+      document.getElementById('ex-ar-desc').innerHTML = data.ar;
+
+      for (let i = 0; i < 7; i++) {
+        document.getElementById('ex-btn-' + i).classList.toggle('primary', i === idx);
+      }
+
+      glbViewerEl.style.opacity = '0';
+      glbViewerEl.style.pointerEvents = 'none';
+      threeStageEl.style.opacity = '0';
+      threeStageEl.style.pointerEvents = 'none';
+
+      videoWrapEl.style.opacity = '1';
+      videoWrapEl.style.pointerEvents = 'auto';
+
+      if (data.useThree) {
+        buildCustomThreeModel(data.threeType, zoomModelGroup);
+      } else {
+        glbViewerEl.src = data.glb;
+      }
+
+      macroVideoEl.src = data.video;
+      macroVideoEl.muted = true;
+      macroVideoEl.volume = 0;
+      macroVideoEl.play().catch(() => {});
+    }
+
+    videoWrapEl.onclick = () => {
+      if (macroVideoEl.paused) {
+        macroVideoEl.play();
+      } else {
+        macroVideoEl.pause();
+      }
+    };
+
+    // =========================================================
+    // مشهد الـ 7 أمثلة معاً 3D
+    // =========================================================
+    const lineupCtx = createPBRScene('lineup-3d-stage', [0, 2.2, 13.5]);
+    const lineupGroup = new THREE.Group();
+    lineupCtx.scene.add(lineupGroup);
+
+    const lineupRadii = [0.22, 0.35, 0.55, 0.85, 1.25, 1.75, 2.4];
+    const lineupColors = [0x38bdf8, 0x64748b, 0x0f172a, 0xffd700, 0x10b981, 0xdc2626, 0x27272a];
+    const lineupPositions = [-7.2, -5.4, -3.4, -1.1, 1.5, 4.5, 8.2];
+
+    for (let i = 0; i < 7; i++) {
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: lineupColors[i],
+        metalness: i === 3 ? 0.95 : 0.35,
+        roughness: 0.15,
+        clearcoat: 0.8
+      });
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(lineupRadii[i], 32, 32), mat);
+      mesh.position.set(lineupPositions[i], lineupRadii[i] - 1.5, 0);
+      lineupGroup.add(mesh);
+    }
+
+    const nanoZonePlane = new THREE.Mesh(
+      new THREE.BoxGeometry(4.2, 0.12, 3.6),
+      new THREE.MeshBasicMaterial({ color: 0x0284c7 })
+    );
+    nanoZonePlane.position.set(-2.2, -1.6, 0);
+    lineupGroup.add(nanoZonePlane);
+
+    // =========================================================
+    // القسم الثالث: مواد النانو
+    // =========================================================
+    const nanomatCtx = createPBRScene('nanomat-3d-stage', [0, 0.5, 5.5]);
+    const nanomatGroup = new THREE.Group();
+    nanomatCtx.scene.add(nanomatGroup);
+
+    function switchNanomatModel(type) {
+      const threeBox = document.getElementById('nanomat-3d-stage');
+      const cntViewer = document.getElementById('nanomat-cnt-viewer');
+
+      if (type === 'cnt') {
+        threeBox.style.display = 'none';
+        cntViewer.style.display = 'block';
+      } else {
+        cntViewer.style.display = 'none';
+        threeBox.style.display = 'block';
+        buildCustomThreeModel(type, nanomatGroup);
+      }
+    }
+    switchNanomatModel('gold');
+
+    // =========================================================
+    // القسم الرابع: فيديو سرعة التفاعل
+    // =========================================================
+    const reactVid = document.getElementById('reactivity-real-video');
+    const reactWrap = document.getElementById('reactivity-video-container');
+    const reactEndCard = document.getElementById('reactivity-end-comment');
+
+    reactVid.muted = true;
+    reactVid.volume = 0;
+
+    reactWrap.onclick = () => {
+      if (reactVid.paused) {
+        reactVid.play();
+      } else {
+        reactVid.pause();
+      }
+    };
+
+    reactVid.onended = () => {
+      reactEndCard.classList.add('active');
+    };
+
+    function restartReactivityVideo() {
+      reactEndCard.classList.remove('active');
+      reactVid.currentTime = 0;
+      reactVid.muted = true;
+      reactVid.volume = 0;
+      reactVid.play();
+    }
+
+    // =========================================================
+    // حلقة التحريك
+    // =========================================================
+    function animateAll3D() {
+      requestAnimationFrame(animateAll3D);
+
+      zoomModelGroup.rotation.y += 0.008;
+      zoomCtx.controls.update();
+      zoomCtx.renderer.render(zoomCtx.scene, zoomCtx.camera);
+
+      lineupCtx.controls.update();
+      lineupCtx.renderer.render(lineupCtx.scene, lineupCtx.camera);
+
+      nanomatGroup.rotation.y += 0.008;
+      nanomatCtx.controls.update();
+      nanomatCtx.renderer.render(nanomatCtx.scene, nanomatCtx.camera);
+    }
+    animateAll3D();
+  </script>
+</body>
+</html>
