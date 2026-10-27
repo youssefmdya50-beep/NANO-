@@ -64,10 +64,7 @@
       color: var(--black-sleek);
     }
 
-    /* 
-      التقسيم الجانبي الثابت: يضمن أن الشرح والصورة جنباً إلى جنب 
-      (align-items: start) تمنع الصورة من التمدد بالطول لو الشرح طويل
-    */
+    /* تخطيط الكمبيوتر (PC): كما هو ولم يتم المساس به */
     .split-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -81,35 +78,60 @@
       box-shadow: 0 8px 25px rgba(15, 23, 42, 0.04);
     }
 
-    /* إجبار الموبايل والتابلت على إبقاء العناصر جنباً إلى جنب وتصغير الخطوط للتناسب */
+    /* 
+      تحسينات شاشات الموبايل والتابلت لضمان كبر حجم الصور
+    */
     @media (max-width: 1024px) {
       .split-row {
-        grid-template-columns: 1fr 1fr !important;
+        grid-template-columns: 1fr 1.15fr !important; /* إعطاء مساحة أكبر للصور */
         gap: 16px;
         padding: 20px;
       }
-      .en-sentence, .ar-sentence {
-        font-size: 0.85rem !important;
-        line-height: 1.6 !important;
-        padding: 8px !important;
-        margin-bottom: 8px !important;
-      }
-      .media-stage {
-        height: 250px !important; /* حماية ارتفاع الـ 3D في الموبايل */
-      }
-      .btn-fs-bottom-left {
-        font-size: 0.7rem !important;
-        padding: 4px 8px !important;
+      .visual-stage {
+        aspect-ratio: 4 / 3 !important; /* جعل الصورة أطول لتكون أكبر */
       }
     }
 
     @media (max-width: 768px) {
+      .container {
+        padding: 15px 12px 60px !important;
+      }
       .split-row {
+        grid-template-columns: 1fr 1.3fr !important; /* الصور تأخذ نسبة أكبر بكثير من النص */
         gap: 10px;
         padding: 12px;
       }
+      .visual-stage {
+        aspect-ratio: 1 / 1 !important; /* تحويل الصور والفيديوهات لمربع كامل لتكون ضخمة وواضحة جداً */
+      }
       .en-sentence, .ar-sentence {
+        font-size: 0.78rem !important;
+        line-height: 1.6 !important;
+        padding: 8px !important;
+        margin-bottom: 8px !important;
+      }
+      .btn-fs-bottom-left {
+        font-size: 0.7rem !important;
+        padding: 4px 8px !important;
+        bottom: 8px !important;
+        left: 8px !important;
+      }
+      .btn-top, .btn-action {
         font-size: 0.75rem !important;
+        padding: 6px 10px !important;
+      }
+      .section-banner h2 {
+        font-size: 1.3rem;
+      }
+      .samir-badge {
+        font-size: 0.85rem !important;
+        padding: 4px 12px !important;
+      }
+      .q-title {
+        font-size: 0.9rem !important;
+      }
+      .answer-box {
+        padding: 12px !important;
       }
     }
 
@@ -118,6 +140,7 @@
       padding-bottom: 16px;
       border-bottom: 1px dashed var(--border);
     }
+
     .bilingual-card:last-child {
       margin-bottom: 0;
       padding-bottom: 0;
@@ -159,54 +182,48 @@
       margin: 0 4px;
     }
 
-    /* =========================================
-       إعدادات العرض البصري (الصور / الفيديو / 3D)
-       ========================================= */
+    /* 
+       حاويات العرض الافتراضية (نسبة 16:9 على الكمبيوتر) 
+    */
     .visual-stage {
       background: transparent;
-      border: none;
+      border: none; 
       border-radius: 18px;
-      position: relative;
-      width: 100%;
       overflow: hidden;
+      position: relative;
       box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-    }
-
-    /* للصور فقط: الارتفاع تلقائي يحافظ على الصورة بالعرض الطبيعي 100% بدون حواف */
-    .img-stage {
-      height: auto !important;
-    }
-    .img-stage img {
       width: 100%;
+      aspect-ratio: 16 / 9;
       height: auto;
-      display: block;
-      border-radius: 18px;
-    }
-
-    /* للـ 3D والفيديو: ارتفاع ثابت وقوي لضمان عملهم بشكل مثالي بدون اختفاء */
-    .media-stage {
-      height: 420px;
-      background: #090d16;
-    }
-
-    /* تنسيقات ملء الشاشة */
-    .visual-stage:fullscreen,
-    .visual-stage:-webkit-full-screen {
-      width: 100vw !important;
-      height: 100vh !important;
-      border-radius: 0;
-      background: #000;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    
-    .img-stage:fullscreen img,
-    .img-stage:-webkit-full-screen img {
+
+    .visual-stage:fullscreen,
+    .visual-stage:-webkit-full-screen {
+      border: none;
+      border-radius: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: #000;
+    }
+
+    .real-img-wrapper {
       width: 100%;
       height: 100%;
-      object-fit: contain; /* في ملء الشاشة نعرض الصورة كاملة بدون قص */
-      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+    }
+
+    /* cover تضمن ملء المربع بالكامل وتمنع الشرائط السودة */
+    .real-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
     .custom-video-wrap {
@@ -214,9 +231,12 @@
       inset: 0;
       width: 100%;
       height: 100%;
+      background: transparent;
       z-index: 10;
+      transition: opacity 0.3s ease;
       cursor: pointer;
     }
+
     .custom-video-wrap video {
       width: 100%;
       height: 100%;
@@ -228,8 +248,6 @@
       height: 100%;
       background: radial-gradient(circle at center, #ffffff 0%, #e2e8f0 100%);
       cursor: grab;
-      position: absolute;
-      inset: 0;
     }
     .canvas-3d-box:active { cursor: grabbing; }
 
@@ -238,27 +256,24 @@
       height: 100%;
       background: radial-gradient(circle at center, #ffffff 0%, #e2e8f0 100%);
       --poster-color: transparent;
-      position: absolute;
-      inset: 0;
     }
 
     .sketchfab-clean-crop {
       width: 100%;
       height: 100%;
       overflow: hidden;
-      position: absolute;
-      inset: 0;
+      position: relative;
       background: #ffffff;
     }
     .sketchfab-clean-crop iframe {
       width: 100%;
       height: calc(100% + 120px);
       margin-top: -60px;
+      margin-bottom: -60px;
       border: none;
       display: block;
     }
 
-    /* زر ملء الشاشة */
     .btn-fs-bottom-left {
       position: absolute;
       bottom: 14px;
@@ -274,6 +289,9 @@
       font-weight: 700;
       backdrop-filter: blur(8px);
       transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .btn-fs-bottom-left:hover {
       background: var(--accent);
@@ -281,7 +299,6 @@
       border-color: var(--accent);
     }
 
-    /* الأزرار */
     .btn-top {
       padding: 8px 14px;
       border-radius: 10px;
@@ -303,6 +320,7 @@
       color: #ffffff;
       border-color: var(--black-sleek);
     }
+
     .btn-action {
       background: var(--black-sleek);
       color: #ffffff;
@@ -319,7 +337,6 @@
       background: var(--accent);
     }
 
-    /* أقسام أسئلة عم سمسم وعم سمير */
     .samir-qa-section {
       background: #ffffff;
       border: 2px solid var(--accent);
@@ -344,6 +361,7 @@
       font-weight: 900;
       font-size: 1rem;
     }
+
     .qa-block {
       background: #f8fafc;
       border: 1px solid #bae6fd;
@@ -351,7 +369,9 @@
       padding: 22px;
       margin-bottom: 22px;
     }
-    .qa-block:last-child { margin-bottom: 0; }
+    .qa-block:last-child {
+      margin-bottom: 0;
+    }
     .q-title {
       font-weight: 900;
       color: var(--accent);
@@ -364,6 +384,7 @@
       background: #ffffff;
       border-right: 5px solid var(--black-sleek);
       border-radius: 12px;
+      display: block;
     }
     .samir-stamp {
       margin-top: 14px;
@@ -389,7 +410,9 @@
       text-align: center;
       z-index: 40;
     }
-    .reactivity-end-card.active { display: flex; }
+    .reactivity-end-card.active {
+      display: flex;
+    }
 
     /* تذييل الموقع */
     .site-footer {
@@ -454,9 +477,11 @@
         </div>
       </div>
 
-      <div class="visual-stage img-stage">
+      <div class="visual-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-        <img src="images.jfif" alt="Nanochemistry Lab">
+        <div class="real-img-wrapper">
+          <img id="img-scientists" src="images.jfif" alt="Nanochemistry Lab">
+        </div>
       </div>
     </section>
 
@@ -477,7 +502,7 @@
         </div>
       </div>
 
-      <div class="visual-stage media-stage">
+      <div class="visual-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
         <div class="sketchfab-clean-crop">
           <iframe title="electron microscope FESEM Gemini" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" src="https://sketchfab.com/models/39d882d22227475a8e1ec8ba2a7cee6f/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_hint=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_annotations=0"></iframe>
@@ -502,9 +527,11 @@
               <div class="ar-sentence">تخيل إنك لابس <strong>جوانتي ملاكمة ضخم جداً</strong> زي الراجل اللي في الصورة ده، وبتحاول تمسك بيه حباية رمل صغيرة من على الأرض؛ الجوانتي كبير وتخين جداً فمستحيل يحس بحباية الرمل أو يمسكها! ده بالظبط اللي بيحصل مع الضوء العادي: موجة الضوء العادي تخينة جداً (عرضها من 400 لـ 700 نانومتر)، يعني أتخن من جسيم النانو بـ 500 مرة! فالموجة بتعدي من فوق جسيم النانو من غير ما تخبط فيه وترجع لعنينا. عشان كده بنستخدم "الإلكترونات" لأنها رفيعة ودقيقة جداً فبتقدر تخبط في ذرات النانو وترسملنا صورتها.</div>
               <div class="samir-stamp">✅ دي الإجابة يا عم سمسم!</div>
             </div>
-            <div class="visual-stage img-stage">
+            <div class="visual-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <img src="image_a70ffd65.jpg" alt="المصارع بجوانتي الملاكمة وحبة الرمل">
+              <div class="real-img-wrapper">
+                <img src="image_a70ffd65.jpg" alt="المصارع بجوانتي الملاكمة وحبة الرمل">
+              </div>
             </div>
           </div>
         </div>
@@ -521,9 +548,11 @@
               <div class="ar-sentence">تخيل إريال الراديو والتلفزيون بتاع زمان: لو الإريال طويل ومفرود، بيلقط قنوات وموجات معينة، ولو قصرته خالص بيلقط قنوات تانية خالص! الدهب برضه كده؛ الإلكترونات اللي جواه بتلعب مع الضوء. في سبيكة الدهب الكبيرة، بتعكس اللون الأصفر اللي كلنا عارفينه. لكن لما تكسر الدهب وتصغره لكورة نانو صغيرة جداً (10 نانومتر)، الإلكترونات بتتزنق وتتغير حركتها، فتبدأ تعكس درجات الأحمر والبنفسجي، <strong>زي ما هو باين قدامك وشايفه بعينيك الاتنين في الأنابيب!</strong></div>
               <div class="samir-stamp">✅ دي الإجابة يا عم سمير!</div>
             </div>
-            <div class="visual-stage img-stage">
+            <div class="visual-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <img src="Color-changes-of-the-reaction-solution-during-the-course-of-colloidal-AuNPs-formation.webp" alt="تغير ألوان الذهب النانوي">
+              <div class="real-img-wrapper">
+                <img src="Color-changes-of-the-reaction-solution-during-the-course-of-colloidal-AuNPs-formation.webp" alt="تغير ألوان الذهب النانوي">
+              </div>
             </div>
           </div>
         </div>
@@ -545,6 +574,7 @@
           <div class="ar-sentence">مقياس النانو هو النطاق اللي بيضم أي حاجة حجمها من <strong>1 لحد 100 نانومتر</strong>.</div>
         </div>
 
+        <!-- أزرار اختيار المثال من الـ 7 أمثلة -->
         <div style="display:flex; flex-wrap:wrap; gap:8px; margin: 16px 0;">
           <button class="btn-top primary" onclick="selectZoomExample(0)" id="ex-btn-0">1. Water (0.1 nm)</button>
           <button class="btn-top" onclick="selectZoomExample(1)" id="ex-btn-1">2. Benzene (0.5 nm)</button>
@@ -566,17 +596,18 @@
         </div>
       </div>
 
-      <!-- مسرح الزووم الموحد 3D & Video -->
-      <div class="visual-stage media-stage" id="zoom-unified-stage">
+      <!-- مسرح الزووم الموحد -->
+      <div class="visual-stage" id="zoom-unified-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(document.getElementById('zoom-unified-stage'))">⛶ ملء الشاشة</button>
         <div class="custom-video-wrap" id="zoom-video-container">
           <video id="zoom-macro-video" src="gemini_generated_video_855f0739.mp4" playsinline autoplay muted></video>
         </div>
-        <model-viewer id="zoom-glb-viewer" src="h2o_molecule.glb" camera-controls auto-rotate shadow-intensity="1" style="opacity:0; pointer-events:none; transition: opacity 0.3s ease;"></model-viewer>
-        <div id="zoom-3d-stage" class="canvas-3d-box" style="opacity:0; pointer-events:none; transition: opacity 0.3s ease;"></div>
+        <model-viewer id="zoom-glb-viewer" src="h2o_molecule.glb" camera-controls auto-rotate shadow-intensity="1" style="position:absolute; inset:0; width:100%; height:100%; z-index:5; opacity:0; pointer-events:none; transition: opacity 0.3s ease;"></model-viewer>
+        <div id="zoom-3d-stage" style="position:absolute; inset:0; width:100%; height:100%; z-index:4; opacity:0; pointer-events:none; transition: opacity 0.3s ease;"></div>
       </div>
     </section>
 
+    <!-- مشهد الـ 7 أمثلة معاً 3D -->
     <section class="split-row">
       <div>
         <div class="bilingual-card">
@@ -585,7 +616,7 @@
         </div>
       </div>
 
-      <div class="visual-stage media-stage">
+      <div class="visual-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
         <div id="lineup-3d-stage" class="canvas-3d-box"></div>
       </div>
@@ -619,9 +650,12 @@
               <div class="ar-sentence">تخيل إنك <strong>شحط كبير وعريض</strong>، وفجأة هجم عليك 100 عيل صغير من كل ناحية! اللي متبت في إيدك، واللي ماسك في رجلك، واللي راكب فوق كتافك.. هتلاقي نفسك متكتف ومش عارف تتحرك خطوة واحدة! ده بالظبط اللي بيحصل مع الفيروس: جسيمات النانو دي أصغر من الفيروس بـ 100 مرة، فبتتلم عليه من كل حتة وتلزق في الشوك بتاعه وتكتفه تماماً، فميقدرش يخترق خلايا جسمنا ويفضل عاجز!</div>
               <div class="samir-stamp">✅ دي الإجابة يا عم سمير!</div>
             </div>
-            <div class="visual-stage img-stage">
+            <!-- صورة الشحط والـ 100 عيل معروضة بشكل مثالي بالعرض (1:1 في الموبايل و 16:9 في الكمبيوتر) بدون ضغط -->
+            <div class="visual-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <img src="WhatsApp Image 2026-10-27 at 3.01.31 AM.jpeg" alt="الشحط والـ 100 عيل">
+              <div class="real-img-wrapper">
+                <img src="WhatsApp Image 2026-10-27 at 3.01.31 AM.jpeg" alt="الشحط والـ 100 عيل">
+              </div>
             </div>
           </div>
         </div>
@@ -653,7 +687,7 @@
         </div>
       </div>
 
-      <div class="visual-stage media-stage">
+      <div class="visual-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
         <div id="nanomat-3d-stage" class="canvas-3d-box"></div>
         <model-viewer id="nanomat-cnt-viewer" src="nanotube.glb" camera-controls auto-rotate shadow-intensity="1" style="display:none;"></model-viewer>
@@ -677,9 +711,11 @@
               <div class="ar-sentence"><strong>زي ما هو باين قدامك وشايفه بعينيك الاتنين في الصورة اللي جنبك:</strong> دي طبقة الحماية الرقيقة جداً اللي بنحطها على شاشة الموبايل وماسكينها بين الصوابع. هي آه عريضة ومغطية شاشة الموبايل كلها، بس "السمك أو التخن" بتاعها رقيق جداً لدرجة إنه يقع في مقياس النانو! طالما الذرات اتزنقت في السمك النانوي ده، المادة بتكتسب خصائص النانو فوراً حتى لو طولها وعرضها كبار شايفينهم بعنينا.</div>
               <div class="samir-stamp">✅ دي الإجابة يا عم سمسم!</div>
             </div>
-            <div class="visual-stage img-stage">
+            <div class="visual-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <img src="image_e7abb16.jpg" alt="سمك طبقة الحماية النانوية بين الأصابع">
+              <div class="real-img-wrapper">
+                <img src="image_e7abb16.jpg" alt="سمك طبقة الحماية النانوية بين الأصابع">
+              </div>
             </div>
           </div>
         </div>
@@ -696,9 +732,11 @@
               <div class="ar-sentence">بص لصورة الكوتشينة دي <strong>زي ما هو باين قدامك:</strong> ورق الكوتشينة اللي على اليمين سايب فوق بعضه من غير أي لزق، فأول ما المروحة اشتغلت الورق اتزحلق وطار في ثواني (ده بالظبط سن القلم الرصاص، طبقات كربون سايبة بتتزحلق وتتقصف بسهولة). لكن رزمة الكوتشينة اللي في النص <strong>مصبوب عليها شمع ولزق ماسك كل ورقة في اللي جنبها بقوة</strong>، فمهما شغلت عليها المروحة أو ضغطت عليها بقت كتلة صلبة واحدة مابتتكسرش! أنبوبة الكربون النانوية معمولة بنفس الفكرة: ذرات الكربون ملحومة ومترابطة في شكل أسطوانة متماسكة تماسك جبار.</div>
               <div class="samir-stamp">✅ دي الإجابة يا عم سمير!</div>
             </div>
-            <div class="visual-stage img-stage">
+            <div class="visual-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <img src="download.jfif" alt="الكوتشينة السايبة والمثبتة أمام المروحة">
+              <div class="real-img-wrapper">
+                <img src="download.jfif" alt="الكوتشينة السايبة والمثبتة أمام المروحة">
+              </div>
             </div>
           </div>
         </div>
@@ -733,13 +771,14 @@
         </div>
       </div>
 
-      <!-- مشغل الفيديو -->
-      <div class="visual-stage media-stage" id="reactivity-stage">
+      <!-- مشغل الفيديو النظيف بدون أي أزرار أو خيارات صوت -->
+      <div class="visual-stage" id="reactivity-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(document.getElementById('reactivity-stage'))">⛶ ملء الشاشة</button>
         <div class="custom-video-wrap" id="reactivity-video-container">
           <video id="reactivity-real-video" src="WhatsApp Video 2026-10-27 at 8.25.16 PM.mp4" playsinline autoplay muted></video>
         </div>
         
+        <!-- بطاقة الملاحظة العلمية التي تظهر تلقائياً فور انتهاء الفيديو -->
         <div id="reactivity-end-comment" class="reactivity-end-card">
           <span style="background:var(--accent); color:#fff; padding:6px 18px; border-radius:999px; font-weight:800; margin-bottom:14px; font-size:1.05rem;">💡 ملاحظة علمية هامة في نهاية التجربة</span>
           <div class="en-sentence" style="background:rgba(255,255,255,0.12); color:#fff; border-left-color:var(--cyan-vivid); text-align:center; font-size:1.05rem;">
@@ -770,9 +809,11 @@
               <div class="ar-sentence">تخيل شلة صحاب ماشيين في الشارع وماسكين إيدين بعض جامد صف واحد <strong>زي ما هو باين قدامك في الصورة</strong>. اللي في النص إيديه الاتنين مشغولين (ماسك واحد يمينه وواحد شماله)، فلو 100 جنيه وقعت قدامه مش هيعرف يوطي يجيبها. لكن صاحبهم اللي على الحرف بره خالص، عنده إيد فاضية مش ماسكة في حد! فأول ما بيلمح الـ 100 جنيه بيخطفها في ثانية! ذرات السطح في النانو عاملة زي صاحبهم اللي على الحرف ده: إيديها الكيميائية فاضية وحرة، فأول ما تقابل مادة تانية بتهجم تمسك فيها وتتفاعل معاها طلقة!</div>
               <div class="samir-stamp">✅ دي الإجابة يا عم سمسم!</div>
             </div>
-            <div class="visual-stage img-stage">
+            <div class="visual-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <img src="Gemini_Generated_Image_5a8kd5a8kd5a8kd5.jfif" alt="اليد الحرة والتفاعل">
+              <div class="real-img-wrapper">
+                <img src="Gemini_Generated_Image_5a8kd5a8kd5a8kd5.jfif" alt="اليد الحرة والتفاعل">
+              </div>
             </div>
           </div>
         </div>
@@ -811,7 +852,7 @@
         </div>
       </div>
 
-      <div class="visual-stage media-stage">
+      <div class="visual-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
         <div class="sketchfab-clean-crop">
           <iframe title="Wireframe Shape Sierpinski Buckyball" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" src="https://sketchfab.com/models/c98e4836e1a049fe9fcca6d1e7489a19/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_hint=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_annotations=0"></iframe>
@@ -840,9 +881,11 @@
         </div>
       </div>
 
-      <div class="visual-stage img-stage">
+      <div class="visual-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-        <img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1000&q=85" alt="Water Filtration and Cosmetics">
+        <div class="real-img-wrapper">
+          <img id="img-cosmetics-water" src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1000&q=85" alt="Water Filtration and Cosmetics">
+        </div>
       </div>
     </section>
 
@@ -859,7 +902,7 @@
         </div>
       </div>
 
-      <div class="visual-stage media-stage">
+      <div class="visual-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
         <div class="sketchfab-clean-crop">
           <iframe title="AMD Ryzen AM4 CPU" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" src="https://sketchfab.com/models/b51dd1ed7b0a49f885ea0d03929995c3/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_hint=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_annotations=0"></iframe>
@@ -884,9 +927,11 @@
               <div class="ar-sentence"><strong>زي ما هو باين قدامك وشايفه بعينيك الاتنين في الصورة التوضيحية اللي جنبك:</strong> الفكرة كلها شغالة بنظام <strong>"المفتاح والقفل"</strong>. الخلايا المريضة أو السرطانية بيكون على جدارها من بره تجاويف وبروتينات معينة اسمها (Receptor) عاملة زي "القفل" بالظبط ومش موجودة في الخلايا السليمة. العلماء بيركبوا على ضهر كرة البوكي "مفتاح كيميائي" (Ligand) ميركبش غير في تجويف الخلية المريضة دي! فطول ما الكرة ماشية في الدم جنب خلايا سليمة مبتفتحش، وأول ما توصل للخلية المريضة يعشق المفتاح في القفل وتفرغ الدواء في قلب الورم مباشرة!</div>
               <div class="samir-stamp">✅ دي الإجابة يا عم سمسم!</div>
             </div>
-            <div class="visual-stage img-stage">
+            <div class="visual-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <img src="image_2e8b72c0.jpg" alt="كرة البوكي بنظام القفل والمفتاح في البروتين">
+              <div class="real-img-wrapper">
+                <img src="image_2e8b72c0.jpg" alt="كرة البوكي بنظام القفل والمفتاح في البروتين">
+              </div>
             </div>
           </div>
         </div>
@@ -910,9 +955,11 @@
               </div>
               <div class="samir-stamp">✅ دي الإجابة يا عم سمير!</div>
             </div>
-            <div class="visual-stage img-stage">
+            <div class="visual-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <img src="download (1).jfif" alt="الشبح المار عبر بوابة الترانزستور - النفق الكمي">
+              <div class="real-img-wrapper">
+                <img src="download (1).jfif" alt="الشبح المار عبر بوابة الترانزستور - النفق الكمي">
+              </div>
             </div>
           </div>
         </div>
@@ -932,7 +979,7 @@
 
   </main>
 
-  <script>
+ <script>
     // =========================================================================
     // وظيفة ملء الشاشة الموحدة
     // =========================================================================
@@ -953,7 +1000,7 @@
     }
 
     // =========================================================================
-    // مساعد Three.js
+    // مساعد Three.js لإنشاء المشاهد ثلاثية الأبعاد
     // =========================================================================
     function createPBRScene(containerId, cameraPos = [0, 2, 7]) {
       const container = document.getElementById(containerId);
@@ -1002,7 +1049,7 @@
     }
 
     // =========================================================================
-    // القسم الثاني: الـ 7 أمثلة 
+    // القسم الثاني: بيانات الـ 7 أمثلة 
     // =========================================================================
     const zoomExamplesData = [
       {
@@ -1240,9 +1287,9 @@
       }
     };
 
-    // =========================================================
+    // =========================================================================
     // مشهد الـ 7 أمثلة معاً 3D
-    // =========================================================
+    // =========================================================================
     const lineupCtx = createPBRScene('lineup-3d-stage', [0, 2.2, 13.5]);
     const lineupGroup = new THREE.Group();
     lineupCtx.scene.add(lineupGroup);
@@ -1270,9 +1317,9 @@
     nanoZonePlane.position.set(-2.2, -1.6, 0);
     lineupGroup.add(nanoZonePlane);
 
-    // =========================================================
-    // القسم الثالث: مواد النانو
-    // =========================================================
+    // =========================================================================
+    // القسم الثالث: مواد النانو 3D
+    // =========================================================================
     const nanomatCtx = createPBRScene('nanomat-3d-stage', [0, 0.5, 5.5]);
     const nanomatGroup = new THREE.Group();
     nanomatCtx.scene.add(nanomatGroup);
@@ -1292,9 +1339,9 @@
     }
     switchNanomatModel('gold');
 
-    // =========================================================
+    // =========================================================================
     // القسم الرابع: فيديو سرعة التفاعل
-    // =========================================================
+    // =========================================================================
     const reactVid = document.getElementById('reactivity-real-video');
     const reactWrap = document.getElementById('reactivity-video-container');
     const reactEndCard = document.getElementById('reactivity-end-comment');
@@ -1322,9 +1369,9 @@
       reactVid.play();
     }
 
-    // =========================================================
-    // حلقة التحريك
-    // =========================================================
+    // =========================================================================
+    // حلقة التحريك المستمرة (Animation Loop)
+    // =========================================================================
     function animateAll3D() {
       requestAnimationFrame(animateAll3D);
 
@@ -1341,5 +1388,4 @@
     }
     animateAll3D();
   </script>
-</body>
 </html>
