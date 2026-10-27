@@ -64,6 +64,10 @@
       color: var(--black-sleek);
     }
 
+    /* 
+      التقسيم الجانبي الثابت: يضمن أن الشرح والصورة جنباً إلى جنب 
+      (align-items: start) تمنع الصورة من التمدد بالطول لو الشرح طويل
+    */
     .split-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -77,9 +81,35 @@
       box-shadow: 0 8px 25px rgba(15, 23, 42, 0.04);
     }
 
+    /* إجبار الموبايل والتابلت على إبقاء العناصر جنباً إلى جنب وتصغير الخطوط للتناسب */
     @media (max-width: 1024px) {
       .split-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 16px;
+        padding: 20px;
+      }
+      .en-sentence, .ar-sentence {
+        font-size: 0.85rem !important;
+        line-height: 1.6 !important;
+        padding: 8px !important;
+        margin-bottom: 8px !important;
+      }
+      .media-stage {
+        height: 250px !important; /* حماية ارتفاع الـ 3D في الموبايل */
+      }
+      .btn-fs-bottom-left {
+        font-size: 0.7rem !important;
+        padding: 4px 8px !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .split-row {
+        gap: 10px;
+        padding: 12px;
+      }
+      .en-sentence, .ar-sentence {
+        font-size: 0.75rem !important;
       }
     }
 
@@ -88,7 +118,6 @@
       padding-bottom: 16px;
       border-bottom: 1px dashed var(--border);
     }
-
     .bilingual-card:last-child {
       margin-bottom: 0;
       padding-bottom: 0;
@@ -130,52 +159,53 @@
       margin: 0 4px;
     }
 
-    /* حاويات العرض الافتراضية (للفيديوهات والـ 3D) */
+    /* =========================================
+       إعدادات العرض البصري (الصور / الفيديو / 3D)
+       ========================================= */
     .visual-stage {
       background: transparent;
-      border: none; 
-      border-radius: 18px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      height: auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .visual-stage:fullscreen,
-    .visual-stage:-webkit-full-screen {
       border: none;
-      border-radius: 0;
-      width: 100vw !important;
-      height: 100vh !important;
-      background: #000;
+      border-radius: 18px;
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
     }
 
-    /* 
-      السر هنا: كلاس مخصص للصور يمنع القص ويأخذ الحجم الطبيعي للصورة 100% 
-    */
+    /* للصور فقط: الارتفاع تلقائي يحافظ على الصورة بالعرض الطبيعي 100% بدون حواف */
     .img-stage {
-      aspect-ratio: auto !important;
       height: auto !important;
-    }
-    .img-stage .real-img-wrapper {
-      height: auto !important;
-      background: transparent;
     }
     .img-stage img {
       width: 100%;
       height: auto;
-      object-fit: contain !important;
-      border-radius: 18px;
       display: block;
+      border-radius: 18px;
     }
+
+    /* للـ 3D والفيديو: ارتفاع ثابت وقوي لضمان عملهم بشكل مثالي بدون اختفاء */
+    .media-stage {
+      height: 420px;
+      background: #090d16;
+    }
+
+    /* تنسيقات ملء الشاشة */
+    .visual-stage:fullscreen,
+    .visual-stage:-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      border-radius: 0;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
     .img-stage:fullscreen img,
     .img-stage:-webkit-full-screen img {
-      height: 100vh !important;
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* في ملء الشاشة نعرض الصورة كاملة بدون قص */
       border-radius: 0;
     }
 
@@ -184,12 +214,9 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      background: transparent;
       z-index: 10;
-      transition: opacity 0.3s ease;
       cursor: pointer;
     }
-
     .custom-video-wrap video {
       width: 100%;
       height: 100%;
@@ -201,6 +228,8 @@
       height: 100%;
       background: radial-gradient(circle at center, #ffffff 0%, #e2e8f0 100%);
       cursor: grab;
+      position: absolute;
+      inset: 0;
     }
     .canvas-3d-box:active { cursor: grabbing; }
 
@@ -209,24 +238,27 @@
       height: 100%;
       background: radial-gradient(circle at center, #ffffff 0%, #e2e8f0 100%);
       --poster-color: transparent;
+      position: absolute;
+      inset: 0;
     }
 
     .sketchfab-clean-crop {
       width: 100%;
       height: 100%;
       overflow: hidden;
-      position: relative;
+      position: absolute;
+      inset: 0;
       background: #ffffff;
     }
     .sketchfab-clean-crop iframe {
       width: 100%;
       height: calc(100% + 120px);
       margin-top: -60px;
-      margin-bottom: -60px;
       border: none;
       display: block;
     }
 
+    /* زر ملء الشاشة */
     .btn-fs-bottom-left {
       position: absolute;
       bottom: 14px;
@@ -242,9 +274,6 @@
       font-weight: 700;
       backdrop-filter: blur(8px);
       transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
     }
     .btn-fs-bottom-left:hover {
       background: var(--accent);
@@ -252,6 +281,7 @@
       border-color: var(--accent);
     }
 
+    /* الأزرار */
     .btn-top {
       padding: 8px 14px;
       border-radius: 10px;
@@ -273,7 +303,6 @@
       color: #ffffff;
       border-color: var(--black-sleek);
     }
-
     .btn-action {
       background: var(--black-sleek);
       color: #ffffff;
@@ -290,6 +319,7 @@
       background: var(--accent);
     }
 
+    /* أقسام أسئلة عم سمسم وعم سمير */
     .samir-qa-section {
       background: #ffffff;
       border: 2px solid var(--accent);
@@ -314,7 +344,6 @@
       font-weight: 900;
       font-size: 1rem;
     }
-
     .qa-block {
       background: #f8fafc;
       border: 1px solid #bae6fd;
@@ -322,9 +351,7 @@
       padding: 22px;
       margin-bottom: 22px;
     }
-    .qa-block:last-child {
-      margin-bottom: 0;
-    }
+    .qa-block:last-child { margin-bottom: 0; }
     .q-title {
       font-weight: 900;
       color: var(--accent);
@@ -337,7 +364,6 @@
       background: #ffffff;
       border-right: 5px solid var(--black-sleek);
       border-radius: 12px;
-      display: block;
     }
     .samir-stamp {
       margin-top: 14px;
@@ -363,9 +389,7 @@
       text-align: center;
       z-index: 40;
     }
-    .reactivity-end-card.active {
-      display: flex;
-    }
+    .reactivity-end-card.active { display: flex; }
 
     /* تذييل الموقع */
     .site-footer {
@@ -432,9 +456,7 @@
 
       <div class="visual-stage img-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-        <div class="real-img-wrapper">
-          <img id="img-scientists" src="images.jfif" alt="Nanochemistry Lab">
-        </div>
+        <img src="images.jfif" alt="Nanochemistry Lab">
       </div>
     </section>
 
@@ -455,7 +477,7 @@
         </div>
       </div>
 
-      <div class="visual-stage">
+      <div class="visual-stage media-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
         <div class="sketchfab-clean-crop">
           <iframe title="electron microscope FESEM Gemini" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" src="https://sketchfab.com/models/39d882d22227475a8e1ec8ba2a7cee6f/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_hint=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_annotations=0"></iframe>
@@ -482,9 +504,7 @@
             </div>
             <div class="visual-stage img-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <div class="real-img-wrapper">
-                <img src="image_a70ffd65.jpg" alt="المصارع بجوانتي الملاكمة وحبة الرمل">
-              </div>
+              <img src="image_a70ffd65.jpg" alt="المصارع بجوانتي الملاكمة وحبة الرمل">
             </div>
           </div>
         </div>
@@ -503,9 +523,7 @@
             </div>
             <div class="visual-stage img-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <div class="real-img-wrapper">
-                <img src="Color-changes-of-the-reaction-solution-during-the-course-of-colloidal-AuNPs-formation.webp" alt="تغير ألوان الذهب النانوي">
-              </div>
+              <img src="Color-changes-of-the-reaction-solution-during-the-course-of-colloidal-AuNPs-formation.webp" alt="تغير ألوان الذهب النانوي">
             </div>
           </div>
         </div>
@@ -527,7 +545,6 @@
           <div class="ar-sentence">مقياس النانو هو النطاق اللي بيضم أي حاجة حجمها من <strong>1 لحد 100 نانومتر</strong>.</div>
         </div>
 
-        <!-- أزرار اختيار المثال من الـ 7 أمثلة -->
         <div style="display:flex; flex-wrap:wrap; gap:8px; margin: 16px 0;">
           <button class="btn-top primary" onclick="selectZoomExample(0)" id="ex-btn-0">1. Water (0.1 nm)</button>
           <button class="btn-top" onclick="selectZoomExample(1)" id="ex-btn-1">2. Benzene (0.5 nm)</button>
@@ -549,18 +566,17 @@
         </div>
       </div>
 
-      <!-- مسرح الزووم الموحد -->
-      <div class="visual-stage" id="zoom-unified-stage">
+      <!-- مسرح الزووم الموحد 3D & Video -->
+      <div class="visual-stage media-stage" id="zoom-unified-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(document.getElementById('zoom-unified-stage'))">⛶ ملء الشاشة</button>
         <div class="custom-video-wrap" id="zoom-video-container">
           <video id="zoom-macro-video" src="gemini_generated_video_855f0739.mp4" playsinline autoplay muted></video>
         </div>
-        <model-viewer id="zoom-glb-viewer" src="h2o_molecule.glb" camera-controls auto-rotate shadow-intensity="1" style="position:absolute; inset:0; width:100%; height:100%; z-index:5; opacity:0; pointer-events:none; transition: opacity 0.3s ease;"></model-viewer>
-        <div id="zoom-3d-stage" style="position:absolute; inset:0; width:100%; height:100%; z-index:4; opacity:0; pointer-events:none; transition: opacity 0.3s ease;"></div>
+        <model-viewer id="zoom-glb-viewer" src="h2o_molecule.glb" camera-controls auto-rotate shadow-intensity="1" style="opacity:0; pointer-events:none; transition: opacity 0.3s ease;"></model-viewer>
+        <div id="zoom-3d-stage" class="canvas-3d-box" style="opacity:0; pointer-events:none; transition: opacity 0.3s ease;"></div>
       </div>
     </section>
 
-    <!-- مشهد الـ 7 أمثلة معاً 3D -->
     <section class="split-row">
       <div>
         <div class="bilingual-card">
@@ -569,7 +585,7 @@
         </div>
       </div>
 
-      <div class="visual-stage">
+      <div class="visual-stage media-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
         <div id="lineup-3d-stage" class="canvas-3d-box"></div>
       </div>
@@ -605,9 +621,7 @@
             </div>
             <div class="visual-stage img-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <div class="real-img-wrapper">
-                <img src="WhatsApp Image 2026-10-27 at 3.01.31 AM.jpeg" alt="الشحط والـ 100 عيل">
-              </div>
+              <img src="WhatsApp Image 2026-10-27 at 3.01.31 AM.jpeg" alt="الشحط والـ 100 عيل">
             </div>
           </div>
         </div>
@@ -639,7 +653,7 @@
         </div>
       </div>
 
-      <div class="visual-stage">
+      <div class="visual-stage media-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
         <div id="nanomat-3d-stage" class="canvas-3d-box"></div>
         <model-viewer id="nanomat-cnt-viewer" src="nanotube.glb" camera-controls auto-rotate shadow-intensity="1" style="display:none;"></model-viewer>
@@ -665,9 +679,7 @@
             </div>
             <div class="visual-stage img-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <div class="real-img-wrapper">
-                <img src="image_e7abb16.jpg" alt="سمك طبقة الحماية النانوية بين الأصابع">
-              </div>
+              <img src="image_e7abb16.jpg" alt="سمك طبقة الحماية النانوية بين الأصابع">
             </div>
           </div>
         </div>
@@ -686,9 +698,7 @@
             </div>
             <div class="visual-stage img-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <div class="real-img-wrapper">
-                <img src="download.jfif" alt="الكوتشينة السايبة والمثبتة أمام المروحة">
-              </div>
+              <img src="download.jfif" alt="الكوتشينة السايبة والمثبتة أمام المروحة">
             </div>
           </div>
         </div>
@@ -723,7 +733,8 @@
         </div>
       </div>
 
-      <div class="visual-stage" id="reactivity-stage">
+      <!-- مشغل الفيديو -->
+      <div class="visual-stage media-stage" id="reactivity-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(document.getElementById('reactivity-stage'))">⛶ ملء الشاشة</button>
         <div class="custom-video-wrap" id="reactivity-video-container">
           <video id="reactivity-real-video" src="WhatsApp Video 2026-10-27 at 8.25.16 PM.mp4" playsinline autoplay muted></video>
@@ -761,9 +772,7 @@
             </div>
             <div class="visual-stage img-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <div class="real-img-wrapper">
-                <img src="Gemini_Generated_Image_5a8kd5a8kd5a8kd5.jfif" alt="اليد الحرة والتفاعل">
-              </div>
+              <img src="Gemini_Generated_Image_5a8kd5a8kd5a8kd5.jfif" alt="اليد الحرة والتفاعل">
             </div>
           </div>
         </div>
@@ -802,7 +811,7 @@
         </div>
       </div>
 
-      <div class="visual-stage">
+      <div class="visual-stage media-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
         <div class="sketchfab-clean-crop">
           <iframe title="Wireframe Shape Sierpinski Buckyball" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" src="https://sketchfab.com/models/c98e4836e1a049fe9fcca6d1e7489a19/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_hint=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_annotations=0"></iframe>
@@ -833,9 +842,7 @@
 
       <div class="visual-stage img-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-        <div class="real-img-wrapper">
-          <img id="img-cosmetics-water" src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1000&q=85" alt="Water Filtration and Cosmetics">
-        </div>
+        <img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1000&q=85" alt="Water Filtration and Cosmetics">
       </div>
     </section>
 
@@ -852,7 +859,7 @@
         </div>
       </div>
 
-      <div class="visual-stage">
+      <div class="visual-stage media-stage">
         <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
         <div class="sketchfab-clean-crop">
           <iframe title="AMD Ryzen AM4 CPU" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" src="https://sketchfab.com/models/b51dd1ed7b0a49f885ea0d03929995c3/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_hint=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_annotations=0"></iframe>
@@ -879,9 +886,7 @@
             </div>
             <div class="visual-stage img-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <div class="real-img-wrapper">
-                <img src="image_2e8b72c0.jpg" alt="كرة البوكي بنظام القفل والمفتاح في البروتين">
-              </div>
+              <img src="image_2e8b72c0.jpg" alt="كرة البوكي بنظام القفل والمفتاح في البروتين">
             </div>
           </div>
         </div>
@@ -907,9 +912,7 @@
             </div>
             <div class="visual-stage img-stage">
               <button class="btn-fs-bottom-left" onclick="toggleFullScreen(this.parentElement)">⛶ ملء الشاشة</button>
-              <div class="real-img-wrapper">
-                <img src="download (1).jfif" alt="الشبح المار عبر بوابة الترانزستور - النفق الكمي">
-              </div>
+              <img src="download (1).jfif" alt="الشبح المار عبر بوابة الترانزستور - النفق الكمي">
             </div>
           </div>
         </div>
@@ -957,11 +960,11 @@
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0xf1f5f9);
 
-      const camera = new THREE.PerspectiveCamera(45, (container.clientWidth || 600) / (container.clientHeight || 480), 0.1, 1000);
+      const camera = new THREE.PerspectiveCamera(45, (container.clientWidth || 600) / (container.clientHeight || 420), 0.1, 1000);
       camera.position.set(...cameraPos);
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(container.clientWidth || 600, container.clientHeight || 480);
+      renderer.setSize(container.clientWidth || 600, container.clientHeight || 420);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.2;
